@@ -1,0 +1,77 @@
+@font-face {
+   font-family: "Sansumi";
+   src: local("Sansumi"),
+     url("/fonts/sansumi/Sansumi-Regular.ttf") format("truetype");
+   font-weight: normal;
+   font-style: normal;
+ }
+
+ @font-face {
+   font-family: "Sansumi";
+   src: local("Sansumi"),
+     url("/fonts/sansumi/Sansumi-Bold.ttf") format("truetype");
+   font-weight: bold;
+   font-style: normal;
+ }
+
+body {
+  margin: 0;
+  font-family: Sansumi, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  line-height: 26px;
+  background-color: var(--gray-lighter);
+}
+
+input {
+   font-family: Sansumi;
+   font-size: 14px;
+   font-weight: 600;
+   border-radius: 4px;
+   padding: 2px;
+}
+
+textarea {
+   font-family: Sansumi;
+   font-size: 14px;
+   font-weight: 600;
+   border-radius: 4px;
+   outline: none;
+   border-style: none;
+   border: 1px solid var(--gray-light);
+   padding: 8px;
+}
+
+ul {
+   list-style-type: none;
+   margin: 0;
+   padding: 0;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+button {
+   margin: 0 8px!important;
+}
+
+:root {
+   --primary: #D90429;
+   --primary-light: rgba(214,11,82,0.6);
+   --primary-lighter: rgba(214,11,82,0.3);
+   --primary-darker: rgba(214,11,82,1);
+   --primary-dark: rgba(214,11,82,0.8);
+   --secondary-lighter: rgba(43,46,66,0.2);
+   --secondary: #2B2D42;
+   --gray-light: #e0e0e0;
+   --gray-lighter: #fafafa;
+   --gray: #a0a0a0;
+   --gray-dark: #808080;
+   --smallText: 14px;
+   --smallerText: 12px;
+}

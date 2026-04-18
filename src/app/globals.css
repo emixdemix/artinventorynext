@@ -120,6 +120,7 @@ button {
 .react-tabs__tab-list {
    border-bottom: 1px solid var(--secondary-lighter) !important;
    margin-bottom: 32px !important;
+   display: flex;
 }
 
 .react-tabs__tab-list li {
@@ -128,6 +129,7 @@ button {
    border-top-left-radius: 8px;
    border-top-right-radius: 8px;
    background-color: var(--secondary-lighter);
+   cursor: pointer;
 }
 
 li.react-tabs__tab--selected {

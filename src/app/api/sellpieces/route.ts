@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { validateToken } from '@/server/auth'
 import { sellArtPieces } from '@/server/db/database'
 import { ObjectId } from 'mongodb'
+import { getPostHogClient } from '@/lib/posthog-server'
 
 export async function POST(request: NextRequest) {
   const auth = await validateToken(request)
@@ -20,5 +21,16 @@ export async function POST(request: NextRequest) {
     pieces: artPieces,
     owner: new ObjectId(userId as string)
   })
+
+  const posthog = getPostHogClient()
+  posthog.capture({
+    distinctId: String(userId),
+    event: 'art_pieces_sold_completed',
+    properties: {
+      customer_id: customerId,
+      num_pieces: Object.keys(artPieces).length,
+    }
+  })
+
   return NextResponse.json(response, { status: 200 })
 }

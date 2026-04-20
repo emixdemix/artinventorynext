@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import Select, { } from 'react-select'
 import { addFeedback, apiGetFeedback, convertIsoDate } from "./utility";
 import { Feedback } from "../interfaces";
+import posthog from "posthog-js";
 
 export const FeedbackForm = () => {
    const [option, setOption] = useState('')
@@ -37,6 +38,7 @@ export const FeedbackForm = () => {
    const submitFeedback = async () => {
       try {
          const response = await addFeedback({ option, description })
+         posthog.capture("feedback_submitted", { feedback_type: option })
          setOption('')
          setDescription('')
          setSuccess(true)
@@ -44,6 +46,7 @@ export const FeedbackForm = () => {
             setSuccess(false)
          }, 3000);
       } catch (e) {
+         posthog.captureException(e)
          setError(t('general.error'))
       }
    }

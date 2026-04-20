@@ -6,6 +6,7 @@ import { ARTINVENTORY_BUCKET } from '@/server/interfaces'
 import { ObjectId } from 'mongodb'
 import { v4 as uuidv4 } from 'uuid'
 import sharp from 'sharp'
+import { getPostHogClient } from '@/lib/posthog-server'
 
 export async function GET(request: NextRequest) {
   const auth = await validateToken(request)
@@ -41,6 +42,11 @@ export async function POST(request: NextRequest) {
   if (imageId) {
     try {
       await addArtPiece(body, '', {} as any, info, Buffer.from(''))
+      getPostHogClient().capture({
+        distinctId: String(info._id),
+        event: 'art_piece_created',
+        properties: { title }
+      })
       return NextResponse.json({}, { status: 200 })
     } catch (e) {
       return NextResponse.json({}, { status: 500 })
@@ -54,6 +60,11 @@ export async function POST(request: NextRequest) {
       await putObject(ARTINVENTORY_BUCKET, filename, fileBuffer)
       const size = await sharp(fileBuffer).metadata()
       await addArtPiece(body, random, size, info, fileBuffer)
+      getPostHogClient().capture({
+        distinctId: String(info._id),
+        event: 'art_piece_created',
+        properties: { title }
+      })
       return NextResponse.json({}, { status: 200 })
     } catch (e) {
       return NextResponse.json({}, { status: 500 })
@@ -119,6 +130,12 @@ export async function DELETE(request: NextRequest) {
   if (record.deletedCount <= 0) {
     return NextResponse.json({}, { status: 404 })
   }
+
+  getPostHogClient().capture({
+    distinctId: String(info._id),
+    event: 'art_piece_deleted',
+    properties: { art_piece_id: artPieceId }
+  })
 
   return NextResponse.json({}, { status: 200 })
 }

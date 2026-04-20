@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation"
 import { EditArtpiece } from "./forms"
 import { useTranslation } from "react-i18next"
 import { BackButton } from "./backbutton"
+import posthog from "posthog-js"
 
 
 export const Edit = () => {
@@ -55,6 +56,7 @@ export const Edit = () => {
       const response = await updateArtPiece(formData)
       hideWaiting()
       if (response === true) {
+         posthog.capture("art_piece_updated", { title: form.title, art_piece_id: artPiece._id })
          router.push('/dashboard')
       } else {
          setError(t('general.couldnotupdate'))

@@ -53,6 +53,7 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
 import { Dayjs } from "dayjs";
 import ReactGA from "react-ga4";
+import posthog from "posthog-js";
 
 import useDownloader from "react-use-downloader";
 import { Calculator } from "../calculator";
@@ -1511,6 +1512,8 @@ export const LoginForm = () => {
         if (response) {
           localStorage.setItem("session", response.session);
           localStorage.setItem("profile", JSON.stringify(response.profile));
+          posthog.identify(values["email"], { email: values["email"] });
+          posthog.capture("user_logged_in", { email: values["email"] });
           router.push("/home");
         } else {
           setError(t("general.wronglogin"));
@@ -1852,6 +1855,8 @@ export const RegisterForm = (props: {
         values["token"] = token;
         const session = await doRegister(values);
         if (session) {
+          posthog.identify(values["email"], { email: values["email"] });
+          posthog.capture("user_registered", { email: values["email"] });
           props.onSuccess(t("general.registrationsuccess"));
         } else {
           setError(t("general.registrationalready"));

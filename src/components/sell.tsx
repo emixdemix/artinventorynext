@@ -5,6 +5,7 @@ import { apiSellPieces, getArtPieces, getArtpieceSale, getCustomers, hideWaiting
 import { ArtPiece, Customer, KeyValue } from "../interfaces"
 import Select, { SingleValue } from 'react-select'
 import { Modal } from "./modal"
+import posthog from "posthog-js"
 
 
 export const ArtElement = (props: { artPieceSale: KeyValue[], artPieces: ArtPiece[], id: string, onChange: (id: string, value: number) => void }) => {
@@ -94,6 +95,11 @@ export const Sell = () => {
       showWaiting()
       apiSellPieces({customerId:selectedCustomer?.value, artPieces:values}).then(response => {
          hideWaiting()
+         posthog.capture("art_pieces_sold", {
+            customer_id: selectedCustomer?.value,
+            customer_name: selectedCustomer?.label,
+            num_pieces: selected.length,
+         })
          setShowSell(false)
       })
    }

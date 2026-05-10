@@ -1365,6 +1365,56 @@ img.disabled:hover {
    margin: 16px 8px;
 }
 
+.otprow {
+   display: flex;
+   gap: 12px;
+   justify-content: center;
+   margin: 16px 0 8px;
+}
+
+.otprow .otpcell {
+   width: 48px;
+   height: 56px;
+   text-align: center;
+   font-family: Sansumi, sans-serif;
+   font-size: 24px;
+   font-weight: bold;
+   color: var(--secondary);
+   background-color: white;
+   border: 1px solid var(--gray-light);
+   border-radius: 8px;
+   padding: 0;
+   margin: 0;
+   outline: none;
+   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+   caret-color: var(--primary);
+}
+
+.otprow .otpcell:focus {
+   border-color: var(--primary);
+   box-shadow: 0 0 0 3px var(--primary-lighter);
+}
+
+.otprow .otpcell.filled {
+   border-color: var(--secondary);
+}
+
+.otprow .otpcell:disabled {
+   opacity: 0.5;
+   cursor: not-allowed;
+}
+
+@media (max-width: 500px) {
+   .otprow {
+      gap: 8px;
+   }
+   .otprow .otpcell {
+      width: 40px;
+      height: 48px;
+      font-size: 20px;
+   }
+}
+
 .sellContainer {
    padding: 16px;
    border-radius: 16px;

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import {
   ArtPiece,
   ArtPieceDAO,
@@ -1488,6 +1488,130 @@ type LoginPhase = "email" | "signupConfirm" | "code";
 type CodeMode = "login" | "signup";
 const OTP_LENGTH = 6;
 
+interface OtpInputProps {
+  value: string;
+  length?: number;
+  disabled?: boolean;
+  onChange: (digits: string) => void;
+  onComplete?: (digits: string) => void;
+}
+
+const OtpInput = ({
+  value,
+  length = OTP_LENGTH,
+  disabled,
+  onChange,
+  onComplete,
+}: OtpInputProps) => {
+  const refs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    refs.current[0]?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const focusCell = (i: number) => {
+    const el = refs.current[i];
+    if (!el) return;
+    el.focus();
+    requestAnimationFrame(() => el.select());
+  };
+
+  const commit = (digits: string) => {
+    const clean = digits.replace(/\D/g, "").slice(0, length);
+    onChange(clean);
+    if (clean.length === length) {
+      refs.current[length - 1]?.blur();
+      onComplete?.(clean);
+    }
+  };
+
+  const handleChange = (i: number, raw: string) => {
+    const digits = raw.replace(/\D/g, "");
+    if (!digits) return;
+
+    if (digits.length === 1) {
+      const arr = value.padEnd(length, " ").split("");
+      arr[i] = digits;
+      const next = arr.join("").trimEnd();
+      commit(next);
+      if (i < length - 1) focusCell(i + 1);
+      return;
+    }
+
+    // Multi-character (paste landing on a single field)
+    const merged = value.slice(0, i) + digits;
+    commit(merged);
+    const target = Math.min(i + digits.length, length - 1);
+    focusCell(target);
+  };
+
+  const handleKeyDown = (
+    i: number,
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (e.key === "Backspace") {
+      if (value[i]) {
+        const arr = value.split("");
+        arr[i] = "";
+        commit(arr.join(""));
+      } else if (i > 0) {
+        const arr = value.split("");
+        arr[i - 1] = "";
+        commit(arr.join(""));
+        focusCell(i - 1);
+      }
+      e.preventDefault();
+      return;
+    }
+    if (e.key === "ArrowLeft" && i > 0) {
+      e.preventDefault();
+      focusCell(i - 1);
+      return;
+    }
+    if (e.key === "ArrowRight" && i < length - 1) {
+      e.preventDefault();
+      focusCell(i + 1);
+    }
+  };
+
+  const handlePaste = (
+    i: number,
+    e: React.ClipboardEvent<HTMLInputElement>,
+  ) => {
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "");
+    if (!pasted) return;
+    e.preventDefault();
+    const merged = (value.slice(0, i) + pasted).slice(0, length);
+    commit(merged);
+    focusCell(Math.min(merged.length, length - 1));
+  };
+
+  return (
+    <div className="otprow">
+      {Array.from({ length }).map((_, i) => (
+        <input
+          key={i}
+          ref={(el) => {
+            refs.current[i] = el;
+          }}
+          className={`otpcell${value[i] ? " filled" : ""}`}
+          value={value[i] ?? ""}
+          onChange={(e) => handleChange(i, e.target.value)}
+          onKeyDown={(e) => handleKeyDown(i, e)}
+          onPaste={(e) => handlePaste(i, e)}
+          onFocus={(e) => e.target.select()}
+          inputMode="numeric"
+          autoComplete={i === 0 ? "one-time-code" : "off"}
+          maxLength={1}
+          disabled={disabled}
+          aria-label={`Digit ${i + 1}`}
+        />
+      ))}
+    </div>
+  );
+};
+
 export const LoginForm = () => {
   const [phase, setPhase] = useState<LoginPhase>("email");
   const [codeMode, setCodeMode] = useState<CodeMode>("login");
@@ -1602,15 +1726,6 @@ export const LoginForm = () => {
     }
   };
 
-  const onCodeChange = (text: string) => {
-    const digits = text.replace(/\D/g, "").slice(0, OTP_LENGTH);
-    setCode(digits);
-    setError("");
-    if (digits.length === OTP_LENGTH) {
-      void verifyCode(digits);
-    }
-  };
-
   const goBackToEmail = () => {
     if (submitting) return;
     setPhase("email");
@@ -1687,28 +1802,15 @@ export const LoginForm = () => {
           <p className="smallText">
             {t("general.codescreen.subtitle", { email: emailValue.trim() })}
           </p>
-          <div className="otprow">
-            {Array.from({ length: OTP_LENGTH }).map((_, i) => (
-              <span
-                key={i}
-                className={`otpcell${code[i] ? " filled" : ""}${
-                  i === code.length ? " active" : ""
-                }`}
-              >
-                {code[i] ?? ""}
-              </span>
-            ))}
-            <input
-              className="otpinput"
-              value={code}
-              onChange={(e) => onCodeChange(e.target.value)}
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={OTP_LENGTH}
-              autoFocus
-              disabled={submitting}
-            />
-          </div>
+          <OtpInput
+            value={code}
+            disabled={submitting}
+            onChange={(digits) => {
+              setCode(digits);
+              setError("");
+            }}
+            onComplete={(digits) => void verifyCode(digits)}
+          />
           {error && <p className="error smallText">{error}</p>}
           <div className="buttonblock vertical">
             <button

@@ -1738,6 +1738,7 @@ export const LoginForm = () => {
       {phase === "email" && (
         <>
           <h1>{t("general.loginexplain")}</h1>
+          <p className="smallText">{t("general.loginIntro")}</p>
           <div className="inputfield">
             <label>{t("general.email")}</label>
             <ImageInput

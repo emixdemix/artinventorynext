@@ -442,6 +442,14 @@ li.react-tabs__tab--selected {
    border-radius: 40px;
 }
 
+.avatar.placeholder {
+   background-color: var(--gray-lighter);
+   border: 1px solid var(--gray-light);
+   padding: 16px;
+   object-fit: contain;
+   box-sizing: border-box;
+}
+
 .avatarheader {
    width: 40px;
    height: 40px;

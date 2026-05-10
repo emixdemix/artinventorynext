@@ -116,6 +116,7 @@
          "email": "Email",
          "login": "Login",
          "loginexplain": "Art Inventory Login",
+         "loginIntro": "Enter your email to receive a 6 digit code to login or to register if you do not have an account yet.",
          "continue": "Continue",
          "signupconfirm": {
             "title": "Create a free account?",

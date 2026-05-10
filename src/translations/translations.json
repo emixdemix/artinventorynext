@@ -138,6 +138,7 @@
       "email": "Email",
       "login": "Login",
       "loginexplain": "Art Inventory Login",
+      "loginIntro": "Enter your email to receive a 6 digit code to login or to register if you do not have an account yet.",
       "continue": "Continue",
       "signupconfirm": {
         "title": "Create a free account?",
@@ -452,6 +453,7 @@
       "email": "Email",
       "login": "Login",
       "loginexplain": "Art Inventory Login",
+      "loginIntro": "Inserisci la tua email per ricevere un codice di 6 cifre per accedere o per registrarti se non hai ancora un account.",
       "continue": "Continua",
       "signupconfirm": {
         "title": "Creare un account gratuito?",

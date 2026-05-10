@@ -26,7 +26,9 @@ export const PersonalInformation = () => {
 
    useEffect(()=>{
       if (store.profile) {
-         setImage(`data:image/png;base64,${store.profile.picture}`)
+         setImage(store.profile.picture
+            ? `data:image/png;base64,${store.profile.picture}`
+            : emptyprofile)
          setName(store.profile.name)
          setDescribe(store.profile.describe)
          setWebsite(store.profile.website)
@@ -35,7 +37,9 @@ export const PersonalInformation = () => {
 
    useAppStateListener(store=> {
       if (store.profile) {
-         setImage(`data:image/png;base64,${store.profile.picture}`)
+         setImage(store.profile.picture
+            ? `data:image/png;base64,${store.profile.picture}`
+            : emptyprofile)
          setName(store.profile.name)
          setDescribe(store.profile.describe)
          setWebsite(store.profile.website)
@@ -75,7 +79,12 @@ export const PersonalInformation = () => {
          <div className="inputfield">
              <label>{t('general.picture')}</label>
             <input type="file" onChange={handleImgChange} ref={fileUpload} hidden />
-            <img src={image} alt="profile" onClick={() => fileUpload!.current!.click()} className="avatar pointer"/>
+            <img
+               src={image}
+               alt="profile"
+               onClick={() => fileUpload!.current!.click()}
+               className={`avatar pointer${image === emptyprofile ? " placeholder" : ""}`}
+            />
          </div>
          <div className="inputfield">
             <label>{t('general.firstname')}</label>

@@ -5,7 +5,7 @@ import { ARTINVENTORY_BUCKET } from '@/server/interfaces'
 
 export async function POST(request: NextRequest) {
   const auth = await validateToken(request)
-  if (!auth) return NextResponse.json({}, { status: 403 })
+  if (!auth) return NextResponse.json({}, { status: 401 })
   const info = auth.user
 
   const body = await request.json()
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   const auth = await validateToken(request)
-  if (!auth) return NextResponse.json({}, { status: 403 })
+  if (!auth) return NextResponse.json({}, { status: 401 })
   const info = auth.user
 
   const folder = request.nextUrl.searchParams.get('folder')

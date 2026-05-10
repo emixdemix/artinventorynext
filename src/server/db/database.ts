@@ -491,21 +491,24 @@ export const addCategory = async (data: KeyValue, user: WithId<User>): Promise<I
 }
 
 export const addShow = async (data: KeyValue, user: WithId<User>): Promise<InsertOneResult> => {
-   let pictureId
    const client = await getDbClient()
    const db = client.db(ARTINVENTORY_DB)
    const collection = db?.collection<Shows>(SHOWS_COLLECTION)
 
-   const res = collection.insertOne({
+   const doc: Record<string, unknown> = {
       owner: user._id,
       name: data.name,
       location: data.location,
-      list: new ObjectId(data.list as string),
       begin: data.begin,
       end: data.end,
       website: data.website,
       description: data.description
-   })
+   }
+   if (typeof data.list === 'string' && ObjectId.isValid(data.list)) {
+      doc.list = new ObjectId(data.list as string)
+   }
+
+   const res = collection.insertOne(doc as unknown as Shows)
 
    return res
 
@@ -565,24 +568,30 @@ export const updateCustomer = async (data: KeyValue, user: WithId<User>): Promis
 }
 
 export const updateShow = async (data: KeyValue, user: WithId<User>): Promise<UpdateResult> => {
-   let pictureId
    const client = await getDbClient()
    const db = client.db(ARTINVENTORY_DB)
    const collection = db?.collection<Shows>(SHOWS_COLLECTION)
 
-   const res = collection.updateOne({ _id: new ObjectId(data._id as string), owner: user._id },
-      {
-         $set: {
-            owner: user._id,
-            name: data.name,
-            location: data.location,
-            list: new ObjectId(data.list as string),
-            begin: data.begin,
-            end: data.end,
-            website: data.website,
-            description: data.description
-         }
-      })
+   const setDoc: Record<string, unknown> = {
+      owner: user._id,
+      name: data.name,
+      location: data.location,
+      begin: data.begin,
+      end: data.end,
+      website: data.website,
+      description: data.description
+   }
+   const update: Record<string, unknown> = { $set: setDoc }
+   if (typeof data.list === 'string' && ObjectId.isValid(data.list)) {
+      setDoc.list = new ObjectId(data.list as string)
+   } else {
+      update.$unset = { list: '' }
+   }
+
+   const res = collection.updateOne(
+      { _id: new ObjectId(data._id as string), owner: user._id },
+      update,
+   )
 
    return res
 
@@ -789,6 +798,82 @@ export const getUser = async (query: KeyValue): Promise<WithId<User>> => {
    const pieces = collection.find(query)
    const user = await pieces.toArray()
    return user[0]
+}
+
+export const upsertUserPushToken = async (
+   userId: ObjectId,
+   token: string,
+   platform: 'ios' | 'android' | 'unknown',
+): Promise<UpdateResult<User> | null> => {
+   const client = await getDbClient()
+   const db = client.db(ARTINVENTORY_DB)
+   const collection = db?.collection<User>(USERS_COLLECTION)
+   try {
+      // Drop the same token from any other user, then upsert it on this user.
+      await collection.updateMany(
+         { _id: { $ne: userId } },
+         { $pull: { "profile.pushTokens": { token } } as any },
+      )
+      await collection.updateOne(
+         { _id: userId },
+         { $pull: { "profile.pushTokens": { token } } as any },
+      )
+      const res = await collection.updateOne(
+         { _id: userId },
+         {
+            $push: {
+               "profile.pushTokens": {
+                  token,
+                  platform,
+                  updatedAt: Date.now().valueOf(),
+               },
+            } as any,
+         },
+      )
+      return res
+   } catch (e) {
+      return null
+   }
+}
+
+export const removeUserPushToken = async (
+   userId: ObjectId,
+   token: string,
+): Promise<UpdateResult<User> | null> => {
+   const client = await getDbClient()
+   const db = client.db(ARTINVENTORY_DB)
+   const collection = db?.collection<User>(USERS_COLLECTION)
+   try {
+      const res = await collection.updateOne(
+         { _id: userId },
+         { $pull: { "profile.pushTokens": { token } } as any },
+      )
+      return res
+   } catch (e) {
+      return null
+   }
+}
+
+export const addLinkedDevice = async (
+   userId: ObjectId,
+   device: { uuid: string; webPrivateKeyPem: string; mobilePublicKeyPem: string; createdAt: number },
+): Promise<UpdateResult<User> | null> => {
+   const client = await getDbClient()
+   const db = client.db(ARTINVENTORY_DB)
+   const collection = db?.collection<User>(USERS_COLLECTION)
+   try {
+      await collection.updateOne(
+         { _id: userId },
+         { $pull: { "profile.devices": { uuid: device.uuid } } as any },
+      )
+      const res = await collection.updateOne(
+         { _id: userId },
+         { $push: { "profile.devices": device } as any },
+      )
+      return res
+   } catch (e) {
+      return null
+   }
 }
 
 export const saveLoginInfo = async (user:WithId<User>): Promise<InsertOneResult<Logins> | null> => {

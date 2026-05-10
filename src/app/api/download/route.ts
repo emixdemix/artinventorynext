@@ -5,7 +5,7 @@ import { ObjectId } from 'mongodb'
 
 export async function GET(request: NextRequest) {
   const auth = await validateToken(request)
-  if (!auth) return NextResponse.json({}, { status: 403 })
+  if (!auth) return NextResponse.json({}, { status: 401 })
   const userId = auth.user._id
 
   const type = request.nextUrl.searchParams.get('type')

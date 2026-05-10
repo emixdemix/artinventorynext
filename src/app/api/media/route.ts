@@ -9,7 +9,7 @@ import sharp from 'sharp'
 
 export async function POST(request: NextRequest) {
   const auth = await validateToken(request)
-  if (!auth) return NextResponse.json({}, { status: 403 })
+  if (!auth) return NextResponse.json({}, { status: 401 })
   const info = auth.user
 
   const formData = await request.formData()
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   const auth = await validateToken(request)
-  if (!auth) return NextResponse.json({}, { status: 403 })
+  if (!auth) return NextResponse.json({}, { status: 401 })
   const userId = auth.user._id
 
   const mediaId = request.nextUrl.searchParams.get('mediaId')

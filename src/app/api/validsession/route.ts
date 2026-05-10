@@ -3,6 +3,6 @@ import { validateToken } from '@/server/auth'
 
 export async function GET(request: NextRequest) {
   const auth = await validateToken(request)
-  if (!auth) return NextResponse.json({}, { status: 403 })
+  if (!auth) return NextResponse.json({}, { status: 401 })
   return NextResponse.json({}, { status: 200 })
 }

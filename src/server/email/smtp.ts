@@ -2,6 +2,10 @@ import { KeyValue } from "../interfaces";
 import { getTemplate } from "../db/database";
 import nodemailer from "nodemailer";
 import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
+import path from "node:path";
+import { LOGO_CID } from "./templates/theme";
+
+const LOGO_PATH = path.join(process.cwd(), "src/server/email/assets/logo.png");
 
 export const sendEmailThirdParty = async (data: KeyValue) => {
   try {
@@ -23,6 +27,14 @@ export const sendEmailThirdParty = async (data: KeyValue) => {
       subject: data.dynamic_template_data.subject,
       text: text,
       html: text,
+      attachments: [
+        {
+          filename: "logo.png",
+          path: LOGO_PATH,
+          cid: LOGO_CID,
+          contentDisposition: "inline",
+        },
+      ],
     });
 
     console.log("INFO", info);

@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next"
-import { LoginForm, RegisterForm } from "./forms"
 import { useRouter, useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { doConfirm, hideWaiting, showWaiting } from "./utility"

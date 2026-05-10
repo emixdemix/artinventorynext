@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 export async function GET(request: NextRequest) {
   const auth = await validateToken(request)
-  if (!auth) return NextResponse.json({}, { status: 403 })
+  if (!auth) return NextResponse.json({}, { status: 401 })
   const userId = auth.user._id
 
   const response = await getUser({ _id: userId })
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const auth = await validateToken(request)
-  if (!auth) return NextResponse.json({}, { status: 403 })
+  if (!auth) return NextResponse.json({}, { status: 401 })
   const info = auth.user
 
   const formData = await request.formData()

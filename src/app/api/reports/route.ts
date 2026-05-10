@@ -4,7 +4,7 @@ import { getReports } from '@/server/db/database'
 
 export async function GET(request: NextRequest) {
   const auth = await validateToken(request)
-  if (!auth) return NextResponse.json({}, { status: 403 })
+  if (!auth) return NextResponse.json({}, { status: 401 })
 
   const response = await getReports()
   return NextResponse.json(response, { status: 200 })

@@ -70,6 +70,53 @@ export const updateSessionToken = async (key: string, code: string): Promise<Upd
    }
 }
 
+export const setSessionSecurityArtifacts = async (
+   key: string,
+   artifacts: { qrPayload: string; privateKeyPem: string; publicKeyPem: string; uuid: string },
+): Promise<UpdateResult | ErrorCode> => {
+   try {
+      const client = await getDbClient()
+      const db = client.db(ARTINVENTORY_DB)
+      const collection = db.collection(REDIS_COLLECTION)
+      const c = await collection.updateOne(
+         { key },
+         {
+            $set: {
+               "data.security": {
+                  qrPayload: artifacts.qrPayload,
+                  privateKeyPem: artifacts.privateKeyPem,
+                  publicKeyPem: artifacts.publicKeyPem,
+                  uuid: artifacts.uuid,
+                  createdAt: Date.now(),
+               },
+            },
+         },
+      )
+      return c
+   } catch (e) {
+      console.error("DB Error storing security artifacts")
+      return { code: 0x0002, description: "Cannot read database" }
+   }
+}
+
+export const clearSessionSecurityArtifacts = async (
+   key: string,
+): Promise<UpdateResult | ErrorCode> => {
+   try {
+      const client = await getDbClient()
+      const db = client.db(ARTINVENTORY_DB)
+      const collection = db.collection(REDIS_COLLECTION)
+      const c = await collection.updateOne(
+         { key },
+         { $unset: { "data.security": "" } },
+      )
+      return c
+   } catch (e) {
+      console.error("DB Error clearing security artifacts")
+      return { code: 0x0002, description: "Cannot read database" }
+   }
+}
+
 export const update = async (key: string): Promise<UpdateResult | ErrorCode> => {
    try {
       const client = await getDbClient()

@@ -15,6 +15,7 @@
     "bcrypt": "^6.0.0",
     "chart.js": "^4.4.8",
     "dayjs": "^1.11.13",
+    "firebase-admin": "^13.9.0",
     "i18next": "^23.6.0",
     "i18next-http-backend": "^3.0.2",
     "mongodb": "^7.1.1",
@@ -50,7 +51,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed:email-templates": "node --experimental-strip-types scripts/seed-email-templates.ts",
+    "preview:email-templates": "node --experimental-strip-types scripts/seed-email-templates.ts --dry-run"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

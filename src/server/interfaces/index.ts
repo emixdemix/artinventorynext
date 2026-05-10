@@ -88,6 +88,19 @@ export interface Feedback {
   createdAt: number;
 }
 
+export interface PushToken {
+  token: string;
+  platform: 'ios' | 'android' | 'unknown';
+  updatedAt: number;
+}
+
+export interface LinkedDevice {
+  uuid: string;
+  webPrivateKeyPem: string;
+  mobilePublicKeyPem: string;
+  createdAt: number;
+}
+
 export interface UserProfile {
   name: string;
   picture: string;
@@ -102,6 +115,8 @@ export interface UserProfile {
   backurl: string;
   measures: string;
   valuta: string;
+  pushTokens?: PushToken[];
+  devices?: LinkedDevice[];
 }
 
 export interface Logins {

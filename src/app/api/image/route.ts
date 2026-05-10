@@ -4,7 +4,7 @@ import { getImageOriginal, getImageS3 } from '@/server/utility/image'
 
 export async function GET(request: NextRequest) {
   const auth = await validateToken(request)
-  if (!auth) return NextResponse.json({}, { status: 403 })
+  if (!auth) return NextResponse.json({}, { status: 401 })
   const info = auth.user
 
   const image = request.nextUrl.searchParams.get('image')

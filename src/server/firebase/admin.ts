@@ -1,0 +1,36 @@
+import admin from "firebase-admin";
+
+let initialized = false;
+
+export const initAdmin = (): void => {
+  if (initialized || admin.apps.length > 0) {
+    initialized = true;
+    return;
+  }
+
+  const json = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+  if (json) {
+    const credentials = JSON.parse(json);
+    admin.initializeApp({ credential: admin.credential.cert(credentials) });
+    initialized = true;
+    return;
+  }
+
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+
+  if (!projectId || !clientEmail || !privateKey) {
+    throw new Error(
+      "Firebase admin is not configured. Set FIREBASE_SERVICE_ACCOUNT_JSON or FIREBASE_PROJECT_ID + FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY.",
+    );
+  }
+
+  const t = admin.initializeApp({
+    credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
+  });
+  console.log("T:", t);
+  initialized = true;
+};
+
+export { admin };

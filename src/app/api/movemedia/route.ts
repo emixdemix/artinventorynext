@@ -4,7 +4,7 @@ import { movePictureToFolder } from '@/server/db/database'
 
 export async function POST(request: NextRequest) {
   const auth = await validateToken(request)
-  if (!auth) return NextResponse.json({}, { status: 403 })
+  if (!auth) return NextResponse.json({}, { status: 401 })
   const info = auth.user
 
   const body = await request.json()

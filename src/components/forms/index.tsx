@@ -15,11 +15,11 @@ import {
   apiSaveShow,
   deleteCategory,
   doAutoLogin,
-  doChangePassword,
-  doLogin,
-  doRegister,
-  doReset,
-  doSendLink,
+  doCheckAccountExists,
+  doRequestLoginCode,
+  doRequestSignupCode,
+  doVerifyLoginCode,
+  doVerifySignupCode,
   getCategories,
   GetImage,
   getImagePathOriginal,
@@ -35,8 +35,6 @@ const pick = "/images/choose.svg";
 const empty = "/images/nothing.svg";
 const close = "/images/closeicon.svg";
 const searchIcon = "/images/search.svg";
-const eyeopen = "/images/openeye.svg";
-const eyeclose = "/images/closeeye.svg";
 const email = "/images/email.svg";
 
 import { Media } from "../media";
@@ -365,7 +363,10 @@ export const EditCustomerForm = (props: EditCustomerProps) => {
 };
 
 export const AddShowForm = (props: AddShowProps) => {
-  const [values, setValues] = useState({} as KeyValue);
+  const [values, setValues] = useState({
+    begin: new AdapterDayjs().dayjs().toISOString(),
+    end: new AdapterDayjs().dayjs().toISOString(),
+  } as KeyValue);
   const [error, setError] = useState("");
   const [selections, setSelections] = useState([] as ArtSelection[]);
   const router = useRouter();
@@ -395,7 +396,13 @@ export const AddShowForm = (props: AddShowProps) => {
 
   const saveShow = async () => {
     showWaiting();
-    const response = await apiSaveShow(values);
+    const nowIso = new AdapterDayjs().dayjs().toISOString();
+    const payload = {
+      ...values,
+      begin: values["begin"] || nowIso,
+      end: values["end"] || nowIso,
+    };
+    const response = await apiSaveShow(payload);
     if (response.error === false) {
       hideWaiting();
       router.push("/shows");
@@ -533,6 +540,7 @@ export const EditShowForm = (props: EditShowProps) => {
   const [values, setValues] = useState({} as KeyValue);
   const [error, setError] = useState("");
   const [selections, setSelections] = useState([] as ArtSelection[]);
+  const [showData, setShowData] = useState<KeyValue | null>(null);
   const router = useRouter();
   const { t } = useTranslation();
 
@@ -547,26 +555,32 @@ export const EditShowForm = (props: EditShowProps) => {
   }, []);
 
   useEffect(() => {
-    if (selections.length > 0)
-      apiGetShow(props.id).then((data) => {
-        if (!data.error) {
-          const f = selections.filter(
-            (item) => item._id === data.response.data.list,
-          )[0];
-          const v = {} as KeyValue;
-          v["name"] = data.response.data.name;
-          v["location"] = data.response.data.location;
-          v["begin"] = data.response.data.begin;
-          v["end"] = data.response.data.end;
-          v["description"] = data.response.data.description;
-          v["website"] = data.response.data.website;
-          v["list"] = f
-            ? { label: f.name, value: f._id }
-            : { label: "", value: "" };
-          setValues(v);
-        }
-      });
-  }, [selections]);
+    apiGetShow(props.id).then((data) => {
+      if (!data.error) {
+        setShowData(data.response.data);
+      }
+    });
+  }, [props.id]);
+
+  useEffect(() => {
+    if (!showData) return;
+    const listId =
+      showData.list && typeof showData.list === "object"
+        ? (showData.list as { toString: () => string }).toString()
+        : (showData.list as string | undefined);
+    const f = selections.filter((item) => item._id === listId)[0];
+    setValues({
+      name: showData.name ?? "",
+      location: showData.location ?? "",
+      begin: showData.begin || new AdapterDayjs().dayjs().toISOString(),
+      end: showData.end || new AdapterDayjs().dayjs().toISOString(),
+      description: showData.description ?? "",
+      website: showData.website ?? "",
+      list: f
+        ? { label: f.name, value: f._id }
+        : { label: "", value: "" },
+    });
+  }, [showData, selections]);
 
   const setValueField = (text: string, name: string) => {
     values[name] = text;
@@ -590,9 +604,18 @@ export const EditShowForm = (props: EditShowProps) => {
 
   const saveShow = async () => {
     showWaiting();
-    values["_id"] = props.id;
-    values["list"] = values["list"]["value"];
-    const response = await apiSaveShow(values);
+    const nowIso = new AdapterDayjs().dayjs().toISOString();
+    const payload = {
+      ...values,
+      _id: props.id,
+      list:
+        values["list"] && typeof values["list"] === "object"
+          ? (values["list"] as { value: string }).value
+          : values["list"],
+      begin: values["begin"] || nowIso,
+      end: values["end"] || nowIso,
+    };
+    const response = await apiSaveShow(payload);
     if (response.error === false) {
       hideWaiting();
       router.push("/shows");
@@ -1431,46 +1454,28 @@ export const EditArtpiece = (props: EditArtpieceProps) => {
     </>
   );
 };
-interface EyePasswordProps {
+interface ImageInputProps {
   onKeyDown: (e: any) => void;
   onChange: (e: any) => void;
+  value?: string;
+  disabled?: boolean;
 }
 
-const EyePassword = (props: EyePasswordProps) => {
-  const [open, setOpen] = useState(true);
-  const [password, setPassword] = useState("");
+const ImageInput = (props: ImageInputProps) => {
+  const [internal, setInternal] = useState("");
+  const value = props.value !== undefined ? props.value : internal;
   return (
     <div className="eyepassword">
       <input
-        type={open ? "password" : "text"}
-        name="password"
-        value={password}
+        type="email"
+        name="email"
+        value={value}
+        disabled={props.disabled}
+        autoComplete="email"
+        inputMode="email"
         onKeyDown={props.onKeyDown}
         onChange={(e) => {
-          setPassword(e.target.value);
-          props.onChange(e);
-        }}
-      />
-      <img
-        className="mediumImageW"
-        src={open ? eyeopen : eyeclose}
-        onClick={() => setOpen(!open)}
-      />
-    </div>
-  );
-};
-
-const ImageInput = (props: EyePasswordProps) => {
-  const [password, setPassword] = useState("");
-  return (
-    <div className="eyepassword">
-      <input
-        type="text"
-        name="password"
-        value={password}
-        onKeyDown={props.onKeyDown}
-        onChange={(e) => {
-          setPassword(e.target.value);
+          if (props.value === undefined) setInternal(e.target.value);
           props.onChange(e);
         }}
       />
@@ -1479,12 +1484,17 @@ const ImageInput = (props: EyePasswordProps) => {
   );
 };
 
+type LoginPhase = "email" | "signupConfirm" | "code";
+type CodeMode = "login" | "signup";
+const OTP_LENGTH = 6;
+
 export const LoginForm = () => {
-  const [values, setValues] = useState({} as KeyValue);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [phase, setPhase] = useState<LoginPhase>("email");
+  const [codeMode, setCodeMode] = useState<CodeMode>("login");
+  const [emailValue, setEmailValue] = useState("");
+  const [code, setCode] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
 
   const { t } = useTranslation();
   const router = useRouter();
@@ -1504,434 +1514,225 @@ export const LoginForm = () => {
     }
   }, []);
 
-  const login = async () => {
-    load(process.env.NEXT_PUBLIC_RC_SITE_KEY as string).then((recaptcha) => {
-      recaptcha.execute("submit").then(async (token) => {
-        values["token"] = token;
-        const response = await doLogin(values);
-        if (response) {
-          localStorage.setItem("session", response.session);
-          localStorage.setItem("profile", JSON.stringify(response.profile));
-          posthog.identify(values["email"], { email: values["email"] });
-          posthog.capture("user_logged_in", { email: values["email"] });
-          router.push("/home");
-        } else {
-          setError(t("general.wronglogin"));
-        }
-      });
-    });
-  };
+  const getRecaptchaToken = (): Promise<string> =>
+    load(process.env.NEXT_PUBLIC_RC_SITE_KEY as string).then((r) =>
+      r.execute("submit"),
+    );
 
-  const sendLink = async () => {
-    ReactGA.event("sendlink", {
-      category: "appevent",
-      action: "sendlink",
-      label: "Send email link", // optional
-      value: 1, // optional, must be a number
-      nonInteraction: true, // optional, true/false
-      transport: "xhr", // optional, beacon/xhr/image
-    });
-    load(process.env.NEXT_PUBLIC_RC_SITE_KEY as string).then((recaptcha) => {
-      recaptcha.execute("submit").then(async (token) => {
-        values["token"] = token;
-        const session = await doSendLink(values);
-        if (session) {
-          setMessage(t("general.linksent", { email: values["email"] }));
-          values["email"] = "";
-          setValues({ ...values });
-          setEmail("");
-        } else {
+  const onSubmitEmail = async () => {
+    const trimmed = emailValue.trim();
+    if (!isValidEmail(trimmed) || submitting) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const token = await getRecaptchaToken();
+      const exists = await doCheckAccountExists(trimmed, token);
+      if (!exists.ok) {
+        setError(t("general.error"));
+        return;
+      }
+      if (exists.exists) {
+        const sendToken = await getRecaptchaToken();
+        const ok = await doRequestLoginCode(trimmed, sendToken);
+        if (!ok) {
           setError(t("general.error"));
+          return;
         }
-      });
-    });
-  };
-
-  const setValueField = (text: string, name: string) => {
-    setError("");
-    if (name === "password") {
-      setPassword(text);
-    } else {
-      setEmail(text);
-    }
-    values[name] = text;
-    setValues(values);
-  };
-
-  const checkSubmit = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      if (values["email"] && values["password"]) {
-        login();
+        setCodeMode("login");
+        setCode("");
+        setPhase("code");
+      } else {
+        setPhase("signupConfirm");
       }
+    } catch {
+      setError(t("general.error"));
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const checkValues = () => {
-    if (values["email"] && values["password"] && isValidEmail(values["email"]))
-      return true;
-    return false;
+  const onConfirmSignup = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const token = await getRecaptchaToken();
+      const ok = await doRequestSignupCode(emailValue.trim(), token);
+      if (!ok) {
+        setError(t("general.error"));
+        return;
+      }
+      setCodeMode("signup");
+      setCode("");
+      setPhase("code");
+    } catch {
+      setError(t("general.error"));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const verifyCode = async (digits: string) => {
+    if (submitting) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      const token = await getRecaptchaToken();
+      const trimmed = emailValue.trim();
+      const result =
+        codeMode === "signup"
+          ? await doVerifySignupCode(trimmed, digits, token)
+          : await doVerifyLoginCode(trimmed, digits, token);
+      if (!result) {
+        setError(t("general.wronglogin"));
+        return;
+      }
+      localStorage.setItem("session", result.session);
+      localStorage.setItem("profile", JSON.stringify(result.profile));
+      posthog.identify(trimmed, { email: trimmed });
+      posthog.capture(
+        codeMode === "signup" ? "user_registered" : "user_logged_in",
+        { email: trimmed },
+      );
+      router.push("/home");
+    } catch {
+      setError(t("general.error"));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const onCodeChange = (text: string) => {
+    const digits = text.replace(/\D/g, "").slice(0, OTP_LENGTH);
+    setCode(digits);
+    setError("");
+    if (digits.length === OTP_LENGTH) {
+      void verifyCode(digits);
+    }
+  };
+
+  const goBackToEmail = () => {
+    if (submitting) return;
+    setPhase("email");
+    setCode("");
+    setError("");
   };
 
   return (
-    <>
-      <section className="form login">
-        <h1>{t("general.loginexplain")}</h1>
-        <div className="inputfield">
-          <label>{t("general.email")}</label>
-          <ImageInput
-            onKeyDown={(e) => checkSubmit(e)}
-            onChange={(e) => setValueField(e.target.value, "email")}
-          />
-        </div>
-        <div className="inputfield">
-          <label>{t("general.password")}</label>
-          <EyePassword
-            onKeyDown={(e) => checkSubmit(e)}
-            onChange={(e) => setValueField(e.target.value, "password")}
-          />
-        </div>
-        {error && <p className="error smallText">{error}</p>}
-        {message && <p className="smallText">{message}</p>}
-        <div className="buttonblock vertical">
-          <div>
-            <button
-              disabled={!isValidEmail(values["email"])}
-              className="secondaryButton"
-              onClick={() => {
-                sendLink();
-              }}
-            >
-              {t("general.sendalink")}
-            </button>
-            <button
-              disabled={!checkValues()}
-              className="primaryButton"
-              onClick={() => {
-                login();
-              }}
-            >
-              {t("general.login")}
-            </button>
-          </div>
-          <p
-            onClick={() => {
-              router.push("/reset");
-            }}
-            className="smallText pointer select"
-          >
-            {t("general.forgot")}
-          </p>
-        </div>
-        <div className="buttonblock paddingV">
-          <p className="smallText">{t("general.noaccount")}</p>
-          <button
-            className="secondaryButton"
-            onClick={() => {
-              router.push("/register");
-            }}
-          >
-            {t("general.create")}
-          </button>
-        </div>
-      </section>
-    </>
-  );
-};
-
-export const ResetForm = () => {
-  const [values, setValues] = useState({} as KeyValue);
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const { t } = useTranslation();
-  const router = useRouter();
-
-  const setValueField = (text: string, name: string) => {
-    setError("");
-
-    setEmail(text);
-
-    values[name] = text;
-    setValues(values);
-  };
-
-  const resetPassword = async () => {
-    if (isValidEmail(values["email"])) {
-      showWaiting();
-      load(process.env.NEXT_PUBLIC_RC_SITE_KEY as string).then((recaptcha) => {
-        recaptcha.execute("submit").then(async (token) => {
-          values["token"] = token;
-          const session = await doReset(values);
-          if (session) {
-            setSuccess(true);
-          } else {
-            setError(t("general.error"));
-          }
-          hideWaiting();
-        });
-      });
-    } else {
-      setError(t("general.emailerror"));
-    }
-  };
-
-  const checkSubmit = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      if (values["email"]) {
-        resetPassword();
-      }
-    }
-  };
-
-  return (
-    <>
-      {success && (
-        <section className="form">
-          <h1>{t("general.resetTitle")}</h1>
-          <p className="">
-            {t("general.successreset", { email: values["email"] })}
-          </p>
-          <p
-            className="pointer select"
-            onClick={() => {
-              router.refresh();
-            }}
-          >
-            {t("general.sendagain")}
-          </p>
-        </section>
-      )}
-      {!success && (
-        <section className="form">
-          <h1>{t("general.resetTitle")}</h1>
-          <p className="">{t("general.resetExplain")}</p>
+    <section className="form login">
+      {phase === "email" && (
+        <>
+          <h1>{t("general.loginexplain")}</h1>
           <div className="inputfield">
             <label>{t("general.email")}</label>
-            <input
-              type="text"
-              name="email"
-              value={email}
-              onKeyDown={(e) => checkSubmit(e)}
-              onChange={(e) => setValueField(e.target.value, "email")}
+            <ImageInput
+              value={emailValue}
+              disabled={submitting}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && isValidEmail(emailValue.trim())) {
+                  void onSubmitEmail();
+                }
+              }}
+              onChange={(e) => {
+                setEmailValue(e.target.value);
+                setError("");
+              }}
             />
           </div>
+          {error && <p className="error smallText">{error}</p>}
+          <div className="buttonblock">
+            <button
+              disabled={!isValidEmail(emailValue.trim()) || submitting}
+              className="primaryButton"
+              onClick={() => void onSubmitEmail()}
+            >
+              {t("general.continue")}
+            </button>
+          </div>
+        </>
+      )}
 
+      {phase === "signupConfirm" && (
+        <>
+          <h1>{t("general.signupconfirm.title")}</h1>
+          <p className="smallText">
+            {t("general.signupconfirm.body", { email: emailValue.trim() })}
+          </p>
           {error && <p className="error smallText">{error}</p>}
           <div className="buttonblock vertical">
             <button
+              disabled={submitting}
               className="primaryButton"
-              onClick={() => {
-                resetPassword();
-              }}
+              onClick={() => void onConfirmSignup()}
             >
-              {t("general.reset")}
+              {t("general.signupconfirm.cta")}
             </button>
             <p
-              onClick={() => {
-                router.push("/login");
-              }}
+              onClick={goBackToEmail}
               className="smallText pointer select"
             >
-              {t("general.backto.login")}
+              {t("general.signupconfirm.useDifferent")}
             </p>
           </div>
-        </section>
+        </>
       )}
-    </>
-  );
-};
 
-export const PasswordForm = (props: { token: string }) => {
-  const [values, setValues] = useState({} as KeyValue);
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const { t } = useTranslation();
-  const router = useRouter();
-
-  const resetPassword = async () => {
-    if (password.length > 0) {
-      showWaiting();
-      load(process.env.NEXT_PUBLIC_RC_SITE_KEY as string).then((recaptcha) => {
-        recaptcha.execute("submit").then(async (token) => {
-          values["recaptcha"] = token;
-          values["token"] = props.token;
-          values["password"] = password;
-          const session = await doChangePassword(values);
-          if (!session.error) {
-            setSuccess(true);
-          } else {
-            setError(t("general.passworderror"));
-          }
-          hideWaiting();
-        });
-      });
-    } else {
-      setError(t("general.emailerror"));
-    }
-  };
-
-  const checkSubmit = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      if (values["email"]) {
-        resetPassword();
-      }
-    }
-  };
-
-  return (
-    <>
-      {success && (
-        <section className="form">
-          <h1>{t("general.resetTitle")}</h1>
-          <p className="">
-            {t("general.successreset", { email: values["email"] })}
+      {phase === "code" && (
+        <>
+          <h1>
+            {codeMode === "signup"
+              ? t("general.codescreen.signupTitle")
+              : t("general.codescreen.loginTitle")}
+          </h1>
+          <p className="smallText">
+            {t("general.codescreen.subtitle", { email: emailValue.trim() })}
           </p>
-          <p
-            onClick={() => {
-              router.push("/login");
-            }}
-            className="smallText pointer select"
-          >
-            {t("general.backto.login")}
-          </p>
-        </section>
-      )}
-      {!success && (
-        <section className="form">
-          <h1>{t("general.passwordTitle")}</h1>
-          <p className="">{t("general.passwordExplain")}</p>
-          <div className="inputfield">
-            <label>{t("general.password")}</label>
-            <EyePassword
-              onKeyDown={(e) => checkSubmit(e)}
-              onChange={(e) => setPassword(e.target.value)}
+          <div className="otprow">
+            {Array.from({ length: OTP_LENGTH }).map((_, i) => (
+              <span
+                key={i}
+                className={`otpcell${code[i] ? " filled" : ""}${
+                  i === code.length ? " active" : ""
+                }`}
+              >
+                {code[i] ?? ""}
+              </span>
+            ))}
+            <input
+              className="otpinput"
+              value={code}
+              onChange={(e) => onCodeChange(e.target.value)}
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={OTP_LENGTH}
+              autoFocus
+              disabled={submitting}
             />
           </div>
-
           {error && <p className="error smallText">{error}</p>}
           <div className="buttonblock vertical">
             <button
+              disabled={code.length !== OTP_LENGTH || submitting}
               className="primaryButton"
-              onClick={() => {
-                resetPassword();
-              }}
+              onClick={() => void verifyCode(code)}
             >
-              {t("general.confirm")}
+              {codeMode === "signup"
+                ? t("general.codescreen.signupCta")
+                : t("general.codescreen.loginCta")}
             </button>
+            <p
+              onClick={goBackToEmail}
+              className="smallText pointer select"
+            >
+              {t("general.signupconfirm.useDifferent")}
+            </p>
           </div>
-        </section>
+        </>
       )}
-    </>
+    </section>
   );
 };
 
-export const RegisterForm = (props: {
-  onSuccess: (message: string) => void;
-}) => {
-  const [values, setValues] = useState({} as KeyValue);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [terms, setTerms] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
-  const { t } = useTranslation();
-
-  const checkValues = () => {
-    if (values["email"] && values["password"]) {
-      if (isValidEmail(values["email"])) {
-        register();
-      } else {
-        setError(t("general.emailerror"));
-      }
-    } else {
-      setError(t("general.typein"));
-    }
-  };
-
-  const register = async () => {
-    load(process.env.NEXT_PUBLIC_RC_SITE_KEY as string).then((recaptcha) => {
-      recaptcha.execute("submit").then(async (token) => {
-        values["token"] = token;
-        const session = await doRegister(values);
-        if (session) {
-          posthog.identify(values["email"], { email: values["email"] });
-          posthog.capture("user_registered", { email: values["email"] });
-          props.onSuccess(t("general.registrationsuccess"));
-        } else {
-          setError(t("general.registrationalready"));
-        }
-      });
-    });
-  };
-
-  const setValueField = (text: string, name: string) => {
-    setError("");
-    setSuccess("");
-    if (name === "email") {
-      setEmail(text);
-    } else if (name === "password") {
-      setPassword(text);
-    }
-    values[name] = text;
-    setValues(values);
-  };
-
-  const checkSubmit = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      checkValues();
-    }
-  };
-
-  return (
-    <>
-      <section className="form">
-        <div className="inputfield">
-          <label>{t("general.email")}</label>
-          <ImageInput
-            onKeyDown={(e) => checkSubmit(e)}
-            onChange={(e) => setValueField(e.target.value, "email")}
-          />
-          <div>&nbsp;</div>
-        </div>
-        <div className="inputfield">
-          <label>{t("general.password")}</label>
-          <EyePassword
-            onKeyDown={(e) => checkSubmit(e)}
-            onChange={(e) => setValueField(e.target.value, "password")}
-          />
-          <div>&nbsp;</div>
-        </div>
-        <div className="inputfield check">
-          <div>&nbsp;</div>
-          <input
-            type="checkbox"
-            name="terms"
-            checked={terms}
-            onClick={(e) => setTerms(!terms)}
-          />
-          <a target="_blank" href="/privacypolicy.pdf">
-            {t("general.termscondition")}
-          </a>
-        </div>
-        {error && <p className="error smallText">{error}</p>}
-        <div className="buttonblock">
-          <button
-            disabled={
-              !isValidEmail(values["email"]) || !values["password"] || !terms
-            }
-            className="primaryButton"
-            onClick={() => {
-              checkValues();
-            }}
-          >
-            {t("general.register")}
-          </button>
-        </div>
-      </section>
-    </>
-  );
-};
 
 export const ManageCategories = (props: { type: string }) => {
   const [values, setValues] = useState({} as KeyValue);

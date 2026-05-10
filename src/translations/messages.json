@@ -116,6 +116,20 @@
          "email": "Email",
          "login": "Login",
          "loginexplain": "Art Inventory Login",
+         "continue": "Continue",
+         "signupconfirm": {
+            "title": "Create a free account?",
+            "body": "We didn't find an account for {{email}}. Would you like to create a free account? We'll email you a 6-digit code to confirm.",
+            "cta": "Create free account",
+            "useDifferent": "Use a different email"
+         },
+         "codescreen": {
+            "loginTitle": "Enter your code",
+            "signupTitle": "Confirm your email",
+            "subtitle": "Enter the 6-digit code we sent to {{email}}.",
+            "loginCta": "Verify",
+            "signupCta": "Create account"
+         },
          "image": "Image Selection. Additional images can be uploaded later if required.",
          "imageonmedia": "Image Selection",
          "addshows": "Add Show",

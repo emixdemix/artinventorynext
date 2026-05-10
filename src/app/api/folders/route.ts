@@ -31,7 +31,7 @@ async function recursiveFolders(path: string, obj: KeyValue): Promise<KeyValue> 
 
 export async function GET(request: NextRequest) {
   const auth = await validateToken(request)
-  if (!auth) return NextResponse.json({}, { status: 403 })
+  if (!auth) return NextResponse.json({}, { status: 401 })
   const info = auth.user
 
   const obj = {}

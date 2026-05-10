@@ -11,6 +11,7 @@ const statusIcon = '/images/status.svg'
 const typeIcon = '/images/type.svg'
 import { MenuItem, Select } from "@mui/material";
 import { ContextStorage } from "../store";
+import { SecurityTab } from "./securitytab";
 
 export const Settings = () => {
    const [measures, setMeasures] = useState('cm')
@@ -75,6 +76,7 @@ export const Settings = () => {
                <Tab>{t('general.categories')}</Tab>
                <Tab>{t('general.locale')}</Tab>
                <Tab>{t('general.settings')}</Tab>
+               <Tab>{t('general.security')}</Tab>
             </TabList>
 
             <TabPanel>
@@ -139,6 +141,9 @@ export const Settings = () => {
                   </div>
 
                </section>
+            </TabPanel>
+            <TabPanel>
+               <SecurityTab />
             </TabPanel>
          </Tabs>
       </section>

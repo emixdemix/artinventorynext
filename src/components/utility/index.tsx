@@ -164,118 +164,90 @@ export const deleteMediaPiece = async (mediaId: string) => {
   }
 };
 
-export const doLogin = async (values: KeyValue) => {
+export const doCheckAccountExists = async (
+  email: string,
+  recaptchaToken: string,
+): Promise<{ ok: boolean; exists?: boolean }> => {
   try {
-    const response = await axios.post(
-      `/papi/login`,
-      {
-        "g-recaptcha-response": values.token,
-        username: values.email,
-        password: values.password,
-      },
-      {
-        headers: {},
-      },
+    const response = await axios.get(
+      `/papi/account-exists?email=${encodeURIComponent(email)}&recaptchaToken=${encodeURIComponent(recaptchaToken)}`,
     );
     if (response.status === 200) {
-      return response.data;
-    } else {
-      return "";
+      return { ok: true, exists: !!response.data?.exists };
     }
-  } catch (e) {
-    return "";
+    return { ok: false };
+  } catch {
+    return { ok: false };
   }
 };
 
-export const doSendLink = async (values: KeyValue) => {
+export const doRequestLoginCode = async (
+  email: string,
+  recaptchaToken: string,
+): Promise<boolean> => {
   try {
-    const response = await axios.post(
-      `/papi/sendlink`,
-      {
-        "g-recaptcha-response": values.token,
-        email: values.email,
-      },
-      {
-        headers: {},
-      },
-    );
-    if (response.status === 200) {
-      return true;
-    } else {
-      return false;
-    }
-  } catch (e) {
+    const response = await axios.post(`/papi/login-code`, {
+      "g-recaptcha-response": recaptchaToken,
+      email,
+    });
+    return response.status === 200;
+  } catch {
     return false;
   }
 };
 
-export const doChangePassword = async (
-  values: KeyValue,
-): Promise<GeneralAPIError> => {
+export const doVerifyLoginCode = async (
+  email: string,
+  code: string,
+  recaptchaToken: string,
+): Promise<{ session: string; profile: KeyValue } | null> => {
   try {
-    const response = await axios.post(
-      `/papi/changepassword`,
-      {
-        "g-recaptcha-response": values.recaptcha,
-        token: values.token,
-        password: values.password,
-      },
-      {
-        headers: {},
-      },
-    );
+    const response = await axios.post(`/papi/login-verify`, {
+      "g-recaptcha-response": recaptchaToken,
+      email,
+      code,
+    });
     if (response.status === 200) {
-      return { error: false, response };
-    } else {
-      return { error: true, response };
+      return { session: response.data.session, profile: response.data.profile };
     }
-  } catch (e) {
-    return { error: true, response: { e } };
+    return null;
+  } catch {
+    return null;
   }
 };
 
-export const doRegister = async (values: KeyValue) => {
+export const doRequestSignupCode = async (
+  email: string,
+  recaptchaToken: string,
+): Promise<boolean> => {
   try {
-    const response = await axios.post(
-      `/papi/register`,
-      {
-        "g-recaptcha-response": values.token,
-        username: values.email,
-        password: values.password,
-      },
-      {
-        headers: {},
-      },
-    );
-    if (response.status === 200) {
-      return true;
-    } else {
-      return false;
-    }
-  } catch (e) {
+    const response = await axios.post(`/papi/signup-code`, {
+      "g-recaptcha-response": recaptchaToken,
+      email,
+    });
+    return response.status === 200;
+  } catch {
     return false;
   }
 };
 
-export const doReset = async (values: KeyValue) => {
+export const doVerifySignupCode = async (
+  email: string,
+  code: string,
+  recaptchaToken: string,
+): Promise<{ session: string; profile: KeyValue } | null> => {
   try {
-    const response = await axios.post(
-      `/papi/reset`,
-      {
-        "g-recaptcha-response": values.token,
-        email: values.email,
-      },
-      {
-        headers: {},
-      },
-    );
+    const response = await axios.post(`/papi/signup-verify`, {
+      "g-recaptcha-response": recaptchaToken,
+      email,
+      code,
+    });
     if (response.status === 200) {
-      return true;
-    } else {
-      return false;
+      return { session: response.data.session, profile: response.data.profile };
     }
-  } catch (e) {
-    return false;
+    return null;
+  } catch {
+    return null;
   }
 };
 

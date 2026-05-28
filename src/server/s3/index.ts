@@ -11,7 +11,10 @@ import {
   CopyObjectCommandOutput,
 } from '@aws-sdk/client-s3'
 
-const s3 = new S3Client({ region: process.env.AWS_S3_REGION || 'eu-west-1' })
+const s3 = new S3Client({
+  region: process.env.AWS_S3_REGION || 'eu-west-1',
+  followRegionRedirects: true,
+})
 
 export function createBucket(bucketName: string) {
   return s3.send(new CreateBucketCommand({ Bucket: bucketName }))

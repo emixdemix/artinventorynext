@@ -15,6 +15,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({}, { status: 417 })
   }
 
-  const response = await orderArtPieces({ ids, owner: new ObjectId(userId as string) })
-  return NextResponse.json(response, { status: 200 })
+  await orderArtPieces({ ids, owner: new ObjectId(userId as string) })
+  return NextResponse.json({}, { status: 200 })
 }

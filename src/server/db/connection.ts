@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb'
 
-export const ARTINVENTORY_DB = 'artinventory'
+export const ARTINVENTORY_DB = process.env.MONGO_DB_NAME || 'artinventory'
 export const ARTPIECES_COLLECTION = 'artpieces'
 export const PICTURES_COLLECTION = 'pictures'
 export const CATEGORIES_COLLECTION = 'categories'

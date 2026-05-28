@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
   const response = await getUser({ _id: userId })
   if (response) {
-    return NextResponse.json(response.profile, { status: 200 })
+    return NextResponse.json(response.profile ?? {}, { status: 200 })
   } else {
     return NextResponse.json({}, { status: 403 })
   }

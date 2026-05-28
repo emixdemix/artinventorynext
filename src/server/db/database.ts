@@ -1249,7 +1249,7 @@ export const getDataAsCSV = async (user: WithId<User>) => {
 export const movePictureToFolder = async (pictureId: string, path: string, owner: WithId<User>) => {
    const picture = await getPictures({ _id: new ObjectId(pictureId), owner: owner._id })
 
-   if (picture) {
+   if (picture && picture.length > 0) {
       let name = picture[0].url
       const idx = picture[0].url.lastIndexOf('/')
       if (idx !== -1) {

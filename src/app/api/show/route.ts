@@ -34,9 +34,9 @@ export async function DELETE(request: NextRequest) {
 
   const owner = new ObjectId(userId as string)
   const response = await deleteShow(id, owner)
-  if (response) {
-    return NextResponse.json(response, { status: 200 })
-  } else {
+  if (!response || response.deletedCount <= 0) {
     return NextResponse.json({}, { status: 404 })
   }
+
+  return NextResponse.json(response, { status: 200 })
 }

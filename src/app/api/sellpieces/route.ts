@@ -16,6 +16,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({}, { status: 417 })
   }
 
+  if (!ObjectId.isValid(customerId) || !Object.keys(artPieces).every(ObjectId.isValid)) {
+    return NextResponse.json({}, { status: 417 })
+  }
+
   const response = await sellArtPieces({
     customerId,
     pieces: artPieces,

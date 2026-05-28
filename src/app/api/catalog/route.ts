@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
   const { catalog, selectedList, list } = await request.json();
 
-  if (!catalog || (!selectedList.length && !list)) {
+  if (!catalog || (!selectedList?.length && !list)) {
     return NextResponse.json({}, { status: 417 });
   }
 
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       _id: new ObjectId(list),
     });
   }
-  if (selectedList.length) {
+  if (selectedList?.length) {
     const listIds = selectedList.map((item: string) => new ObjectId(item));
     response = await getArtWithImages({ owner, _id: { $in: listIds } });
   }

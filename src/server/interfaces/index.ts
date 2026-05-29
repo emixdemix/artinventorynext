@@ -74,6 +74,7 @@ export interface Shows {
   end: string;
   website: string;
   description: string;
+  pictureId?: ObjectId[];
 }
 
 export interface Reports {

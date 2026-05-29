@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateToken } from '@/server/auth'
-import { addMedia, deleteMedia } from '@/server/db/database'
+import { addMedia, deleteMedia, getMediaUsage } from '@/server/db/database'
 import { putObject } from '@/server/s3'
 import { ARTINVENTORY_BUCKET } from '@/server/interfaces'
 import { ObjectId } from 'mongodb'
@@ -39,11 +39,25 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    await addMedia(body, random, info, fileBuffer)
-    return NextResponse.json({}, { status: 200 })
+    const result = await addMedia(body, random, info, fileBuffer)
+    return NextResponse.json({ _id: result.insertedId }, { status: 200 })
   } catch (e) {
     return NextResponse.json({}, { status: 500 })
   }
+}
+
+export async function GET(request: NextRequest) {
+  const auth = await validateToken(request)
+  if (!auth) return NextResponse.json({}, { status: 401 })
+
+  const id = request.nextUrl.searchParams.get('id')
+  if (!id || !ObjectId.isValid(id)) {
+    return NextResponse.json({}, { status: 417 })
+  }
+
+  const owner = new ObjectId(auth.user._id as string)
+  const usage = await getMediaUsage(id, owner)
+  return NextResponse.json(usage, { status: 200 })
 }
 
 export async function DELETE(request: NextRequest) {

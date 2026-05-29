@@ -286,6 +286,17 @@ export const getShows = async (owner: ObjectId): Promise<Shows[]> => {
    const pipeline = [
       { $match: { owner } },
       {
+         $lookup: {
+            from: "pictures",
+            localField: "pictureId",
+            foreignField: "_id",
+            as: "pictures",
+            pipeline: [
+               { $project: { url: 1 } },
+            ]
+         },
+      },
+      {
          $sort: {
             begin: -1
          }
@@ -327,9 +338,24 @@ export const getShow = async (query: KeyValue): Promise<WithId<Shows> | null> =>
    const db = client.db(ARTINVENTORY_DB)
    const collection = db?.collection<Shows>(SHOWS_COLLECTION)
 
-   const pieces = await collection.findOne<WithId<Shows>>(query)
-
-   return pieces
+   const pipeline = [
+      { $match: query },
+      {
+         $lookup: {
+            from: "pictures",
+            localField: "pictureId",
+            foreignField: "_id",
+            as: "pictures",
+            pipeline: [
+               { $project: { url: 1 } },
+            ]
+         },
+      },
+      { $limit: 1 }
+   ]
+   const cursor = collection.aggregate<WithId<Shows>>(pipeline)
+   const arr = await cursor.toArray()
+   return arr[0] ?? null
 }
 
 export const getCustomer = async (query: KeyValue): Promise<WithId<Customer> | null> => {
@@ -436,6 +462,47 @@ export const deleteSelection = async (selectionId: string, owner: ObjectId): Pro
    return pieces
 }
 
+export type MediaUsage = {
+   artpieces: { _id: string; title: string }[]
+   extraMedia: { _id: string; title: string }[]
+   shows: { _id: string; name: string }[]
+}
+
+export const getMediaUsage = async (mediaId: string, owner: ObjectId): Promise<MediaUsage> => {
+   const client = await getDbClient()
+   const db = client.db(ARTINVENTORY_DB)
+   const id = new ObjectId(mediaId)
+   const artpieces = db.collection<ArtPiece>(ARTPIECES_COLLECTION)
+   const shows = db.collection<Shows>(SHOWS_COLLECTION)
+
+   const [pictureRefs, extraRefs, showRefs] = await Promise.all([
+      artpieces
+         .find({ owner, pictureId: id }, { projection: { _id: 1, title: 1 } })
+         .toArray(),
+      artpieces
+         .find({ owner, extraMedia: id }, { projection: { _id: 1, title: 1 } })
+         .toArray(),
+      shows
+         .find({ owner, pictureId: id }, { projection: { _id: 1, name: 1 } })
+         .toArray(),
+   ])
+
+   return {
+      artpieces: pictureRefs.map((p) => ({
+         _id: p._id.toString(),
+         title: (p as unknown as { title?: string }).title ?? '',
+      })),
+      extraMedia: extraRefs.map((p) => ({
+         _id: p._id.toString(),
+         title: (p as unknown as { title?: string }).title ?? '',
+      })),
+      shows: showRefs.map((s) => ({
+         _id: s._id.toString(),
+         name: (s as unknown as { name?: string }).name ?? '',
+      })),
+   }
+}
+
 export const deleteMedia = async (mediaId: string, owner: ObjectId): Promise<DeleteResult | null> => {
    const client = await getDbClient()
    const db = client.db(ARTINVENTORY_DB)
@@ -443,6 +510,23 @@ export const deleteMedia = async (mediaId: string, owner: ObjectId): Promise<Del
 
    const media = await collection.findOne({ _id: new ObjectId(mediaId), owner })
    if (media) {
+      const id = new ObjectId(mediaId)
+      const artpieces = db.collection<ArtPiece>(ARTPIECES_COLLECTION)
+      const shows = db.collection<Shows>(SHOWS_COLLECTION)
+      await Promise.all([
+         artpieces.updateMany(
+            { owner, pictureId: id },
+            { $pull: { pictureId: id } } as never,
+         ),
+         artpieces.updateMany(
+            { owner, extraMedia: id },
+            { $pull: { extraMedia: id } } as never,
+         ),
+         shows.updateMany(
+            { owner, pictureId: id },
+            { $pull: { pictureId: id } } as never,
+         ),
+      ])
       const pieces = await collection.deleteOne({ _id: new ObjectId(mediaId) })
       const key = `${owner.toString()}/${media.url}`
       console.log('KEY:', key)
@@ -507,11 +591,39 @@ export const addShow = async (data: KeyValue, user: WithId<User>): Promise<Inser
    if (typeof data.list === 'string' && ObjectId.isValid(data.list)) {
       doc.list = new ObjectId(data.list as string)
    }
+   const pictureIds = parsePictureIds(data.pictureId)
+   if (pictureIds.length > 0) {
+      doc.pictureId = pictureIds
+   }
 
    const res = collection.insertOne(doc as unknown as Shows)
 
    return res
 
+}
+
+const parsePictureIds = (raw: unknown): ObjectId[] => {
+   if (raw == null) return []
+   let arr: unknown
+   if (typeof raw === 'string') {
+      try {
+         arr = JSON.parse(raw)
+      } catch {
+         return []
+      }
+   } else {
+      arr = raw
+   }
+   if (!Array.isArray(arr)) return []
+   const out: ObjectId[] = []
+   for (const v of arr) {
+      if (typeof v === 'string' && ObjectId.isValid(v)) {
+         out.push(new ObjectId(v))
+      } else if (v instanceof ObjectId) {
+         out.push(v)
+      }
+   }
+   return out
 }
 
 export const addCustomer = async (data: KeyValue, user: WithId<User>): Promise<InsertOneResult> => {
@@ -582,10 +694,22 @@ export const updateShow = async (data: KeyValue, user: WithId<User>): Promise<Up
       description: data.description
    }
    const update: Record<string, unknown> = { $set: setDoc }
+   const unsetDoc: Record<string, ''> = {}
    if (typeof data.list === 'string' && ObjectId.isValid(data.list)) {
       setDoc.list = new ObjectId(data.list as string)
    } else {
-      update.$unset = { list: '' }
+      unsetDoc.list = ''
+   }
+   if (data.pictureId !== undefined) {
+      const pictureIds = parsePictureIds(data.pictureId)
+      if (pictureIds.length > 0) {
+         setDoc.pictureId = pictureIds
+      } else {
+         unsetDoc.pictureId = ''
+      }
+   }
+   if (Object.keys(unsetDoc).length > 0) {
+      update.$unset = unsetDoc
    }
 
    const res = collection.updateOne(

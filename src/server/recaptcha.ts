@@ -10,7 +10,6 @@ export async function verifyRecaptcha(token: string): Promise<boolean> {
     );
 
     const data = await response.json();
-    console.log("D:", data);
     return data.success === true;
   } catch (e) {
     console.log("E", e);

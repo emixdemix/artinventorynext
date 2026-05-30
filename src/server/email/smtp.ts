@@ -37,10 +37,8 @@ export const sendEmailThirdParty = async (data: KeyValue) => {
       ],
     });
 
-    console.log("INFO", info);
-
     return info;
   } catch (e) {
-    console.log("Error:", e, process.env.SES_PASSWORD);
+    console.log("Error:", e);
   }
 };

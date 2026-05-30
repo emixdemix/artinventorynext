@@ -4,7 +4,6 @@ import { verifyAppCheck } from "@/server/auth/appCheck";
 
 export async function GET(request: NextRequest) {
   const appCheckToken = request.headers.get("X-Firebase-AppCheck");
-  console.log("TOKÖ", appCheckToken);
   if (!(await verifyAppCheck(appCheckToken))) {
     return NextResponse.json({}, { status: 403 });
   }

@@ -140,7 +140,6 @@ export const ReportsComponent = () => {
         selectedList: selected,
         listId: selectedList?.value,
       };
-      console.log("Body", body);
       const response = await apiGetReport(body);
 
       if (response) {
@@ -280,19 +279,24 @@ export const ReportsComponent = () => {
                         })}
                         onChange={(e) => setSelectedList(e)}
                       />
-                      {selectedList && (() => {
-                        const list = selections.find((s) => s._id === selectedList.value);
-                        const count = list?.artpieces?.length ?? 0;
-                        const label = t("general.artworkselected", { howmany: "__N__" });
-                        const [before, after] = label.split("__N__");
-                        return (
-                          <p className="smallText paddingH">
-                            {before}
-                            <strong>{count}</strong>
-                            {after}
-                          </p>
-                        );
-                      })()}
+                      {selectedList &&
+                        (() => {
+                          const list = selections.find(
+                            (s) => s._id === selectedList.value,
+                          );
+                          const count = list?.artpieces?.length ?? 0;
+                          const label = t("general.artworkselected", {
+                            howmany: "__N__",
+                          });
+                          const [before, after] = label.split("__N__");
+                          return (
+                            <p className="smallText paddingH">
+                              {before}
+                              <strong>{count}</strong>
+                              {after}
+                            </p>
+                          );
+                        })()}
                     </div>
                   )}
                   {selected.length > 0 && (

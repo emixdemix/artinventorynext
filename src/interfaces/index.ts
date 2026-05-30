@@ -91,6 +91,11 @@ export interface ArtSelection {
    artpieces: ArtPiece[]
 }
 
+export interface ShowPicture {
+   _id: string
+   url: string
+}
+
 export interface Shows {
    _id?: string
    owner: string
@@ -101,6 +106,8 @@ export interface Shows {
    end: string
    website: string
    description: string
+   pictureId?: string[]
+   pictures?: ShowPicture[]
 }
 
 export interface Address {

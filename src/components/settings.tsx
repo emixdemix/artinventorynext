@@ -9,6 +9,17 @@ import useDownloader from 'react-use-downloader';
 const categoryIcon = '/images/category.svg'
 const statusIcon = '/images/status.svg'
 const typeIcon = '/images/type.svg'
+
+const iconStyle = (url: string): React.CSSProperties => ({
+   WebkitMaskImage: `url(${url})`,
+   maskImage: `url(${url})`,
+   WebkitMaskRepeat: 'no-repeat',
+   maskRepeat: 'no-repeat',
+   WebkitMaskPosition: 'center',
+   maskPosition: 'center',
+   WebkitMaskSize: 'contain',
+   maskSize: 'contain',
+})
 import { MenuItem, Select } from "@mui/material";
 import { ContextStorage } from "../store";
 import { SecurityTab } from "./securitytab";
@@ -84,15 +95,15 @@ export const Settings = () => {
                   <p className="strong paddingV">{t('general.explain.settingscategories')}</p>
                   <ul>
                      <li className="smallText" >
-                        <img src={categoryIcon} className="bigImageW" onClick={() => router.push('/categories/category')} />
+                        <span className="settingsIcon" style={iconStyle(categoryIcon)} onClick={() => router.push('/categories/category')} />
                         {t('general.manageCategories')}
                      </li>
                      <li className="smallText " >
-                        <img src={typeIcon} className="bigImageW" onClick={() => router.push('/categories/arttype')} />
+                        <span className="settingsIcon" style={iconStyle(typeIcon)} onClick={() => router.push('/categories/arttype')} />
                         {t('general.manageArttypes')}
                      </li>
                      <li className="smallText " >
-                        <img src={statusIcon} className="bigImageW" onClick={() => router.push('/categories/status')} />
+                        <span className="settingsIcon" style={iconStyle(statusIcon)} onClick={() => router.push('/categories/status')} />
                         {t('general.manageStatuses')}
                      </li>
                   </ul>

@@ -20,7 +20,9 @@ export async function POST(request: NextRequest) {
   if (!auth) return NextResponse.json({}, { status: 401 });
   const userId = auth.user._id;
 
-  const { catalog, selectedList, list } = await request.json();
+  const body = await request.json();
+  const { catalog, selectedList, list } = body;
+  const fieldsIn: KeyValue = body.fields ?? {};
 
   if (!catalog || (!selectedList?.length && !list)) {
     return NextResponse.json({}, { status: 417 });
@@ -44,69 +46,48 @@ export async function POST(request: NextRequest) {
     response = await getArtWithImages({ owner, _id: { $in: listIds } });
   }
 
-  const fields: KeyValue = {};
-  const fieldKeys = [
-    "name",
-    "media",
-    "dimensions",
-    "year",
-    "price",
-    "description",
-    "frontCover",
-    "backCover",
-  ];
-  for (const key of fieldKeys) {
-    const val = request.nextUrl.searchParams.get(`fields[${key}]`);
-    if (val !== null) fields[key] = val;
-  }
+  const isOn = (v: unknown) => v === true || v === "true";
 
-  fields["frontCover"] = fields["frontCover"] === "true" ? true : false;
-  fields["backCover"] = fields["backCover"] === "true" ? true : false;
+  const showName = isOn(fieldsIn["name"]);
+  const showMedia = isOn(fieldsIn["media"]);
+  const showDimensions = isOn(fieldsIn["dimensions"]);
+  const showYear = isOn(fieldsIn["year"]);
+  const showPrice = isOn(fieldsIn["price"]);
+  const showDescription = isOn(fieldsIn["description"]);
+  const cover = {
+    frontCover: isOn(fieldsIn["frontCover"]),
+    backCover: isOn(fieldsIn["backCover"]),
+  };
 
   if (response) {
     const data = response.map((item: any) => {
       return {
         image: `${userId}/${item.images[0].url}`,
-        title: `${fields["name"] === "true" ? item.title : ""}`,
-        media: `${fields["media"] === "true" ? item.media : ""}`,
-        dimensions: `${fields["dimensions"] === "true" ? item.dimensions : ""}`,
-        year: ` ${fields["year"] === "true" ? item.creation_date : ""} `,
-        price: `${fields["price"] === "true" ? item.price : ""}`,
-        description: `${fields["description"] === "true" ? item.description : ""}`,
+        title: showName ? item.title || "" : "",
+        media: showMedia ? item.media || "" : "",
+        dimensions: showDimensions ? item.dimensions || "" : "",
+        year: showYear && item.creation_date ? String(item.creation_date) : "",
+        price: showPrice ? item.price ?? "" : "",
+        description: showDescription ? item.description || "" : "",
       };
     });
 
     let pdf;
     switch (catalog) {
       case "singlepage":
-        pdf = await OnePerPageLayout(data, user.profile, {
-          frontCover: fields["frontCover"],
-          backCover: fields["backCover"],
-        });
+        pdf = await OnePerPageLayout(data, user.profile, cover);
         break;
       case "imagelist":
-        pdf = await FourPerPageLayout(data, user.profile, {
-          frontCover: fields["frontCover"],
-          backCover: fields["backCover"],
-        });
+        pdf = await FourPerPageLayout(data, user.profile, cover);
         break;
       case "listicon":
-        pdf = await IconListLayout(data, user.profile, {
-          frontCover: fields["frontCover"],
-          backCover: fields["backCover"],
-        });
+        pdf = await IconListLayout(data, user.profile, cover);
         break;
       case "list":
-        pdf = await JustText(data, user.profile, {
-          frontCover: fields["frontCover"],
-          backCover: fields["backCover"],
-        });
+        pdf = await JustText(data, user.profile, cover);
         break;
       case "twolist":
-        pdf = await TwoPerPageLayout(data, user.profile, {
-          frontCover: fields["frontCover"],
-          backCover: fields["backCover"],
-        });
+        pdf = await TwoPerPageLayout(data, user.profile, cover);
         break;
       default:
         return NextResponse.json("", { status: 404 });

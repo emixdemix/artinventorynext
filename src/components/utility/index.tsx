@@ -104,6 +104,31 @@ export const uploadMediaPiece = async (formData: FormData) => {
   }
 };
 
+export const uploadMediaReturnId = async (
+  file: File,
+  name?: string,
+): Promise<string | null> => {
+  const localSession = localStorage.getItem("session");
+  const formData = new FormData();
+  formData.append("document", file);
+  formData.append("name", name || file.name || "image");
+  formData.append("folder", "/");
+  try {
+    const response = await axios.post(`/api/media`, formData, {
+      headers: {
+        "X-Token": localSession,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    if (response.status === 200 && response.data?._id) {
+      return String(response.data._id);
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+};
+
 export const updateArtPiece = async (formData: FormData) => {
   const localSession = localStorage.getItem("session");
   try {

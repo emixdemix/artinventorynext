@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Document, Page } from 'react-pdf'
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
@@ -13,6 +13,11 @@ interface ShowPDFProps {
 export const ShowPDF = (props:ShowPDFProps) => {
    const [page, setPage] = useState(1)
    const [pages, setPages] = useState(0)
+
+   useEffect(() => {
+      setPage(1)
+      setPages(0)
+   }, [props.url])
 
    // Polyfill for SAFARI which otherwise will not work.
    pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/legacy/build/pdf.worker.min.mjs`;

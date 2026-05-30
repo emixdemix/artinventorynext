@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { ClientProviders } from './client-providers'
+import { ThemeProvider, themeInitScript } from '@/theme/ThemeProvider'
 
 export const metadata: Metadata = {
   title: 'Artinventory!',
@@ -13,13 +14,18 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>
-        <ClientProviders>
-          <section className="mainContainer">
-            {children}
-          </section>
-        </ClientProviders>
+        <ThemeProvider>
+          <ClientProviders>
+            <section className="mainContainer">
+              {children}
+            </section>
+          </ClientProviders>
+        </ThemeProvider>
       </body>
     </html>
   )

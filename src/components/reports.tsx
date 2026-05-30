@@ -280,6 +280,19 @@ export const ReportsComponent = () => {
                         })}
                         onChange={(e) => setSelectedList(e)}
                       />
+                      {selectedList && (() => {
+                        const list = selections.find((s) => s._id === selectedList.value);
+                        const count = list?.artpieces?.length ?? 0;
+                        const label = t("general.artworkselected", { howmany: "__N__" });
+                        const [before, after] = label.split("__N__");
+                        return (
+                          <p className="smallText paddingH">
+                            {before}
+                            <strong>{count}</strong>
+                            {after}
+                          </p>
+                        );
+                      })()}
                     </div>
                   )}
                   {selected.length > 0 && (
@@ -430,7 +443,7 @@ export const ReportsComponent = () => {
               </div>
             </div>
 
-            <div className="buttonblock">
+            <div className="buttonblock reportsActions">
               <button
                 disabled={
                   !(!!select && (!!selectedList || selected.length > 0))

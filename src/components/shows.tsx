@@ -1,12 +1,48 @@
 import { useTranslation } from "react-i18next"
 import { useEffect, useState } from "react"
-import { apiDeleteShow, convertIsoDate, Dotted, getSelections, getShows, hideWaiting, showWaiting } from "./utility"
+import { apiDeleteShow, convertIsoDate, Dotted, getImagePathOriginal, getSelections, getShows, hideWaiting, showWaiting } from "./utility"
 import { ArtSelection, Shows } from "../interfaces"
 import { useRouter, useParams } from "next/navigation"
 import { Modal } from "./modal"
 import { ThreeDots } from "./threedots"
 import { BackButton } from "./backbutton"
 const empty = '/images/nothing.svg'
+
+const ShowGallery = (props: { pictures: { _id: string; url: string }[] }) => {
+   const [previews, setPreviews] = useState<{ [id: string]: string | null }>({})
+   const [zoom, setZoom] = useState<string | null>(null)
+
+   useEffect(() => {
+      props.pictures.forEach(p => {
+         if (!p.url || previews[p._id] !== undefined) return
+         getImagePathOriginal(p.url).then(b64 => {
+            setPreviews(prev => ({ ...prev, [p._id]: b64 ? `data:image/png;base64,${b64}` : null }))
+         })
+      })
+   }, [props.pictures])
+
+   return (
+      <>
+         <div className="showImagesGrid">
+            {props.pictures.map(p => {
+               const src = previews[p._id]
+               return (
+                  <div key={p._id} className="showImagesCell">
+                     {src ? (
+                        <img className="showImagesThumb zoom" src={src} onClick={() => setZoom(src)} />
+                     ) : (
+                        <div className="showImagesPlaceholder" />
+                     )}
+                  </div>
+               )
+            })}
+         </div>
+         <Modal title="" closeicon="" visible={zoom !== null} onClose={() => setZoom(null)}>
+            {zoom && <img className="fit" src={zoom} />}
+         </Modal>
+      </>
+   )
+}
 
 export const ShowsComponent = () => {
    const router = useRouter()
@@ -54,7 +90,8 @@ export const ShowsComponent = () => {
       showWaiting()
       await apiDeleteShow(id)
       hideWaiting()
-      router.refresh()
+      setShows(prev => prev.filter(s => s._id !== id))
+      if (selectedShow?._id === id) setSelectedShow(undefined)
    }
 
    return (
@@ -125,23 +162,45 @@ export const ShowsComponent = () => {
                   <div className="detailshow">
                      <p className="name">{t('general.showwebsite')} <span>{selectedShow.website}</span></p>
                   </div>
-                  <section className="artlist">
-                     <p>{selections.find(item => item._id === selectedShow.list)?.name}</p>
-                     <div className="pieces">
-                        {selections.find(item => item._id === selectedShow.list)?.artpieces.map(item => {
-                           return (
-                              <div className="detaillist">
-                                 <img className="iconImage round8 zoom" src={`data:image/png;base64,${item.b64Image}`} />
-                                 <div className="detailtext">
-                                    <div className="smallText">{item.title}</div>
-                                    <div>{item.creation_date.toString().substring(0, 4)}</div>
-                                    <div className="boldText">{new Intl.NumberFormat('de-de').format(item.price)}</div>
+                  {(() => {
+                     const linked = selections.find(item => item._id === selectedShow.list)
+                     const pieces = linked?.artpieces ?? []
+                     const pictures = (selectedShow.pictures ?? []).filter(p => p && p.url)
+                     if (pieces.length === 0 && pictures.length === 0) {
+                        return (
+                           <section className="artlist">
+                              <p className="center">{t('general.noshowimages')}</p>
+                           </section>
+                        )
+                     }
+                     return (
+                        <section className="artlist">
+                           {pictures.length > 0 && (
+                              <>
+                                 <p className="strong">{t('general.showimages')}</p>
+                                 <ShowGallery pictures={pictures as { _id: string; url: string }[]} />
+                              </>
+                           )}
+                           {pieces.length > 0 && (
+                              <>
+                                 <p>{linked?.name}</p>
+                                 <div className="pieces">
+                                    {pieces.map(item => (
+                                       <div className="detaillist">
+                                          <img className="iconImage round8 zoom" src={`data:image/png;base64,${item.b64Image}`} />
+                                          <div className="detailtext">
+                                             <div className="smallText">{item.title}</div>
+                                             <div>{item.creation_date.toString().substring(0, 4)}</div>
+                                             <div className="boldText">{new Intl.NumberFormat('de-de').format(item.price)}</div>
+                                          </div>
+                                       </div>
+                                    ))}
                                  </div>
-                              </div>
-                           )
-                        })}
-                     </div>
-                  </section>
+                              </>
+                           )}
+                        </section>
+                     )
+                  })()}
                </section>
             </div>
             }

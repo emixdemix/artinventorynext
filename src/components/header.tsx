@@ -9,6 +9,7 @@ import { useContext, useEffect, useRef, useState } from 'react'
 import { Modal } from './modal'
 import { emitStore, getProfile } from './utility'
 import { ContextStorage } from '../store'
+import { ThemeToggle } from './theme-toggle'
 
 export const Header = () => {
    const [visible, setVisible] = useState(false)
@@ -76,6 +77,7 @@ export const Header = () => {
                   <p onClick={() => router.push('/feedback')}>{t('general.menu.feedback')}</p>
                </div>
                <p className='text reverse paddingH'>{t('general.hello')}</p>
+               <ThemeToggle />
                <div ref={refImage} className='relative avatarcontainer'>
                   { avatar ?
                      <img className="avatarheader pointer" src={avatar} onClick={() => setOver(!over)} /> 
@@ -103,6 +105,7 @@ export const Header = () => {
 
                      <p onClick={() => { setVisible(false); router.push('/feedback') }}>{t('general.menu.feedback')}</p>
                      <p onClick={() => { setVisible(false); router.push('/logout') }}>{t('general.menu.logout')}</p>
+                     <div style={{ marginTop: 8 }}><ThemeToggle /></div>
                   </div>
                </section>
             </div>

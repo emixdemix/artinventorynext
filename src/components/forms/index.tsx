@@ -2,7 +2,6 @@ import { useContext, useEffect, useRef, useState } from "react";
 import {
   ArtPiece,
   ArtPieceDAO,
-  ArtSelection,
   Category,
   KeyValue,
 } from "../../interfaces";
@@ -23,7 +22,6 @@ import {
   getCategories,
   GetImage,
   getImagePathOriginal,
-  getSelections,
   hideWaiting,
   isValidEmail,
   showWaiting,
@@ -38,6 +36,7 @@ const searchIcon = "/images/search.svg";
 const email = "/images/email.svg";
 
 import { Media } from "../media";
+import { ShowImagesField } from "../show-images-field";
 import Select, { MultiValue, SingleValue } from "react-select";
 const remove = "/images/trash.svg";
 import { useRouter, useParams } from "next/navigation";
@@ -368,19 +367,9 @@ export const AddShowForm = (props: AddShowProps) => {
     end: new AdapterDayjs().dayjs().toISOString(),
   } as KeyValue);
   const [error, setError] = useState("");
-  const [selections, setSelections] = useState([] as ArtSelection[]);
+  const [pictureIds, setPictureIds] = useState<string[]>([]);
   const router = useRouter();
   const { t } = useTranslation();
-
-  useEffect(() => {
-    getSelections().then((data) => {
-      if (Array.isArray(data) && data.length > 0) {
-        setSelections(data);
-      } else {
-        setSelections([]);
-      }
-    });
-  }, []);
 
   const setValueField = (text: string, name: string) => {
     values[name] = text;
@@ -401,6 +390,7 @@ export const AddShowForm = (props: AddShowProps) => {
       ...values,
       begin: values["begin"] || nowIso,
       end: values["end"] || nowIso,
+      pictureId: pictureIds,
     };
     const response = await apiSaveShow(payload);
     if (response.error === false) {
@@ -502,22 +492,6 @@ export const AddShowForm = (props: AddShowProps) => {
           />
         </div>
 
-        <div className="inputfield">
-          <label>{t("general.list")}</label>
-          <Select
-            placeholder={t("general.select")}
-            closeMenuOnSelect={true}
-            isMulti={false}
-            options={[
-              { label: t("general.select"), value: "" },
-              ...selections.map((item) => {
-                return { label: item.name, value: item._id as string };
-              }),
-            ]}
-            onChange={(e) => setValueField(e?.value as string, "list")}
-          />
-        </div>
-
         {error && <p className="error">{error}</p>}
 
         <div className="buttonblock">
@@ -531,6 +505,8 @@ export const AddShowForm = (props: AddShowProps) => {
             {t("general.save")}
           </button>
         </div>
+
+        <ShowImagesField onChange={setPictureIds} />
       </section>
     </>
   );
@@ -539,20 +515,11 @@ export const AddShowForm = (props: AddShowProps) => {
 export const EditShowForm = (props: EditShowProps) => {
   const [values, setValues] = useState({} as KeyValue);
   const [error, setError] = useState("");
-  const [selections, setSelections] = useState([] as ArtSelection[]);
   const [showData, setShowData] = useState<KeyValue | null>(null);
+  const [pictureIds, setPictureIds] = useState<string[]>([]);
+  const lastSavedPictureIdsRef = useRef<string | null>(null);
   const router = useRouter();
   const { t } = useTranslation();
-
-  useEffect(() => {
-    getSelections().then((data) => {
-      if (Array.isArray(data) && data.length > 0) {
-        setSelections(data);
-      } else {
-        setSelections([]);
-      }
-    });
-  }, []);
 
   useEffect(() => {
     apiGetShow(props.id).then((data) => {
@@ -564,11 +531,6 @@ export const EditShowForm = (props: EditShowProps) => {
 
   useEffect(() => {
     if (!showData) return;
-    const listId =
-      showData.list && typeof showData.list === "object"
-        ? (showData.list as { toString: () => string }).toString()
-        : (showData.list as string | undefined);
-    const f = selections.filter((item) => item._id === listId)[0];
     setValues({
       name: showData.name ?? "",
       location: showData.location ?? "",
@@ -576,22 +538,31 @@ export const EditShowForm = (props: EditShowProps) => {
       end: showData.end || new AdapterDayjs().dayjs().toISOString(),
       description: showData.description ?? "",
       website: showData.website ?? "",
-      list: f
-        ? { label: f.name, value: f._id }
-        : { label: "", value: "" },
     });
-  }, [showData, selections]);
+    const pics = Array.isArray(showData.pictures) ? showData.pictures : [];
+    const seededIds = pics.map((p: { _id: unknown }) => String(p._id));
+    setPictureIds(seededIds);
+    lastSavedPictureIdsRef.current = JSON.stringify(seededIds);
+  }, [showData]);
+
+  useEffect(() => {
+    if (lastSavedPictureIdsRef.current === null) return;
+    const serialized = JSON.stringify(pictureIds);
+    if (serialized === lastSavedPictureIdsRef.current) return;
+    lastSavedPictureIdsRef.current = serialized;
+    const nowIso = new AdapterDayjs().dayjs().toISOString();
+    const payload = {
+      ...values,
+      _id: props.id,
+      begin: values["begin"] || nowIso,
+      end: values["end"] || nowIso,
+      pictureId: pictureIds,
+    };
+    void apiSaveShow(payload);
+  }, [pictureIds]);
 
   const setValueField = (text: string, name: string) => {
     values[name] = text;
-    setValues({ ...values });
-  };
-
-  const setSelectValueField = (
-    val: SingleValue<{ label: string; value: string }>,
-    name: string,
-  ) => {
-    values["list"] = val;
     setValues({ ...values });
   };
 
@@ -608,12 +579,9 @@ export const EditShowForm = (props: EditShowProps) => {
     const payload = {
       ...values,
       _id: props.id,
-      list:
-        values["list"] && typeof values["list"] === "object"
-          ? (values["list"] as { value: string }).value
-          : values["list"],
       begin: values["begin"] || nowIso,
       end: values["end"] || nowIso,
+      pictureId: pictureIds,
     };
     const response = await apiSaveShow(payload);
     if (response.error === false) {
@@ -715,20 +683,6 @@ export const EditShowForm = (props: EditShowProps) => {
           />
         </div>
 
-        <div className="inputfield">
-          <label>{t("general.list")}</label>
-          <Select
-            placeholder={t("general.select")}
-            closeMenuOnSelect={true}
-            value={values["list"]}
-            isMulti={false}
-            options={selections.map((item) => {
-              return { label: item.name, value: item._id as string };
-            })}
-            onChange={(e) => setSelectValueField(e, "list")}
-          />
-        </div>
-
         {error && <p className="error">{error}</p>}
 
         <div className="buttonblock">
@@ -742,6 +696,15 @@ export const EditShowForm = (props: EditShowProps) => {
             {t("general.save")}
           </button>
         </div>
+
+        <ShowImagesField
+          initial={
+            showData && Array.isArray(showData.pictures)
+              ? (showData.pictures as { _id: string; url: string }[])
+              : []
+          }
+          onChange={setPictureIds}
+        />
       </section>
     </>
   );

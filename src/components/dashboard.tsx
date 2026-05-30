@@ -428,10 +428,16 @@ export const Dashboard = () => {
                <button className="primaryButton" onClick={() => router.push('/addartpiece')}>{t('general.add')}</button>
 
                <div className="last searchBlock">
-                  <div className="flex1">
-                      {selected.length > 0 && <p>{t('general.click_operation')}</p> }
+                  <div className="flex1 selectionRow">
+                     <p aria-hidden={selected.length === 0} style={{ visibility: selected.length > 0 ? 'visible' : 'hidden' }}>{t('general.click_operation')}</p>
                      <button disabled={selected.length <= 0} onClick={() => setShowManageSelection(true)} className={`selected borderButton`}>Selected: <span>{selected.length ? selected.length : t('general.none')}</span></button>
-                     {selected.length > 0 && <img className="smallImageW pointer" onClick={(e) => { e.stopPropagation(); localStorage.removeItem('selected'); setSelected([]) }} src={clear} />}
+                     <img
+                        className="smallImageW pointer"
+                        aria-hidden={selected.length === 0}
+                        style={{ visibility: selected.length > 0 ? 'visible' : 'hidden', pointerEvents: selected.length > 0 ? 'auto' : 'none' }}
+                        onClick={(e) => { e.stopPropagation(); localStorage.removeItem('selected'); setSelected([]) }}
+                        src={clear}
+                     />
                   </div>
                   <div className="searchfilter">
                      <SearchBlock onChange={function (search: string): void {

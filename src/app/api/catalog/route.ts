@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateToken } from "@/server/auth";
+import { hasPlan } from "@/server/auth/plan";
 import {
   getUser,
   getArtSelectionsWithImages,
@@ -18,6 +19,12 @@ import { ObjectId } from "mongodb";
 export async function POST(request: NextRequest) {
   const auth = await validateToken(request);
   if (!auth) return NextResponse.json({}, { status: 401 });
+  if (!hasPlan(auth.user, "intermediate")) {
+    return NextResponse.json(
+      { error: "plan_required", required: "intermediate" },
+      { status: 403 },
+    );
+  }
   const userId = auth.user._id;
 
   const body = await request.json();

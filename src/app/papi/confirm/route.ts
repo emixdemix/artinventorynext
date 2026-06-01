@@ -51,5 +51,8 @@ export async function POST(request: NextRequest) {
   await saveLoginInfo(user)
   const session = uuidv4()
   await set({ key: session, data: user, timetolive: 3600 * 24 * 1000 })
-  return NextResponse.json({ session, profile: user.profile }, { status: 200 })
+  return NextResponse.json(
+    { session, profile: user.profile, plan: user.plan || 'free' },
+    { status: 200 },
+  )
 }

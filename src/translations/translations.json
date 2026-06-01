@@ -9,6 +9,45 @@
       "show": "Preview",
       "sellpieces": "Sell Artwork",
       "website": "Your Website",
+      "userurl": {
+        "label": "Your public URL",
+        "help": "Lowercase letters, numbers and hyphens. 3 to 40 characters.",
+        "placeholder": "your-name",
+        "preview": "Public URL: https://{{url}}",
+        "invalid": "This URL is not valid or is reserved.",
+        "taken": "This URL is already in use."
+      },
+      "publish": {
+        "action": "Publish",
+        "unpublish": "Unpublish",
+        "published": "Published",
+        "draft": "Draft",
+        "title": "Publish list",
+        "explain": "When published, this list becomes visible at a public URL. Anyone with the link can view the artworks.",
+        "needsuserurl": "Set a public URL in your profile before publishing.",
+        "publicurl": "Public URL",
+        "showprice": "Show prices on public page",
+        "copylink": "Copy link",
+        "linkcopied": "Link copied",
+        "preview": "Preview",
+        "previewbanner": "Preview, not published yet",
+        "public": "Public"
+      },
+      "plan": {
+        "label": "Plan",
+        "free": "Free",
+        "intermediate": "Intermediate",
+        "full": "Full",
+        "current": "Your current plan: {{plan}}",
+        "upsell": {
+          "title": "Feature locked",
+          "close": "Got it"
+        },
+        "upgrade": {
+          "intermediate": "Reports require the Intermediate plan.",
+          "full": "Publishing to a public website requires the Full plan."
+        }
+      },
       "sell": "Assign",
       "preview": "Preview Report",
       "goback": "back",
@@ -181,6 +220,9 @@
       "addList": "Add to List",
       "delete": "Delete",
       "showselection": "Lists",
+      "selections": {
+        "publicintro": "You can make a selection be a public website so people can see the artwork you selected. You can also preview the page until you decide is ready to go public. You can share the link with everyone you wish to see your selected artwork."
+      },
       "editselection": "Edit List",
       "selectlist": "Select a List",
       "measures": "Measures",
@@ -321,7 +363,7 @@
         "categoryText": "Group your artwork into meaningful buckets for better filtering and searching. Use Categories such as Landscapes, Self Portrait or Collages, or Types such as Painting, or Etching, and control the state of your artwork with Status, for example Sold, or Showing in a gallery, or not ready yet.",
         "artworkText": "Easily create and manage your artwork by entering the details of a piece of art such as its name, dimensions, price and media type. Also categorize and upload images to complete the artwork entry. Use the search and filter options to fast find a artpiece or grop them into selections useful for many extra features.",
         "mediaText": "Upload here and mange your media files. Upload pictures and list them with their properties such as dimensions and whether they are connected to an artpiece. If you do not need a media file anymore, you can delete it except if it is connected with some of your valuable artpieces.",
-        "reportText": "Create lists by selecting your artwork and use them to group items or to print reports as PDF downloads. There are several PDF report to create and more to come.",
+        "reportText": "Create lists by selecting your artwork and use them to group items or to print reports as PDF downloads. There are several PDF report to create and more to come. You can also publish a list as a public web site for people to see.",
         "mediaButton": "Manage Media",
         "categoryButton": "Start Organizing",
         "artworkButton": "My Artworks",
@@ -337,6 +379,45 @@
       "createreport": "Crea Report",
       "show": "Preview",
       "website": "Website",
+      "userurl": {
+        "label": "Il tuo URL pubblico",
+        "help": "Lettere minuscole, numeri e trattini. Da 3 a 40 caratteri.",
+        "placeholder": "tuo-nome",
+        "preview": "URL pubblico: https://{{url}}",
+        "invalid": "Questo URL non è valido o è riservato.",
+        "taken": "Questo URL è già in uso."
+      },
+      "publish": {
+        "action": "Pubblica",
+        "unpublish": "Rimuovi pubblicazione",
+        "published": "Pubblicata",
+        "draft": "Bozza",
+        "title": "Pubblica lista",
+        "explain": "Quando pubblicata, la lista è visibile ad un URL pubblico. Chiunque abbia il link può vedere le opere.",
+        "needsuserurl": "Imposta un URL pubblico nel profilo prima di pubblicare.",
+        "publicurl": "URL pubblico",
+        "showprice": "Mostra i prezzi sulla pagina pubblica",
+        "copylink": "Copia link",
+        "linkcopied": "Link copiato",
+        "preview": "Anteprima",
+        "previewbanner": "Anteprima, non ancora pubblicata",
+        "public": "Pubblica"
+      },
+      "plan": {
+        "label": "Piano",
+        "free": "Free",
+        "intermediate": "Intermedio",
+        "full": "Full",
+        "current": "Il tuo piano attuale: {{plan}}",
+        "upsell": {
+          "title": "Funzionalità non disponibile",
+          "close": "Ho capito"
+        },
+        "upgrade": {
+          "intermediate": "I Report richiedono il piano Intermedio.",
+          "full": "La pubblicazione su sito web pubblico richiede il piano Full."
+        }
+      },
       "preview": "Preview Report",
       "goback": "indietro",
       "list": "Lista",
@@ -500,6 +581,9 @@
       "addList": "Aggiungi alla lista",
       "delete": "Rimuovi",
       "showselection": "Liste",
+      "selections": {
+        "publicintro": "Puoi rendere una lista un sito web pubblico cosicché altre persone possano vedere le opere che hai selezionato. Puoi anche vedere l'anteprima della pagina finché non sei pronto a pubblicarla. Puoi condividere il link con chiunque tu voglia mostrare le opere selezionate."
+      },
       "editselection": "Modifica Lista",
       "selectlist": "Seleziona Lista",
       "shows": "Eventi",
@@ -632,7 +716,7 @@
         "categoryText": "Group your artwork into meaningful buckets for better filtering and searching. Use Categories such as Landscapes, Self Portrait or Collages, or Types such as Painting, or Etching, and control the state of your artwork with Status, for example Sold, or Showing in a gallery, or not ready yet.",
         "artworkText": "Easily create and manage your artwork by entering the details of a piece of art such as its name, dimensions, price and media type. Also categorize and upload images to complete the artwork entry. Use the search and filter options to fast find a artpiece or grop them into selections useful for many extra features.",
         "mediaText": "Upload here and mange your media files. Upload pictures and list them with their properties such as dimensions and whether they are connected to an artpiece. If you do not need a media file anymore, you can delete it except if it is connected with some of your valuable artpieces.",
-        "reportText": "Create lists by selecting your artwork and use them to group items or to print reports as PDF downloads. There are several PDF report to create and more to come.",
+        "reportText": "Create lists by selecting your artwork and use them to group items or to print reports as PDF downloads. There are several PDF report to create and more to come. You can also publish a list as a public web site for people to see.",
         "mediaButton": "Manage Media",
         "categoryButton": "Start Organizing",
         "artworkButton": "My Artworks",

@@ -420,6 +420,52 @@ export const addFeedback = async (data: KeyValue) => {
   }
 };
 
+export const slugify = (input: string): string => {
+  if (!input) return "";
+  return input
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+};
+
+export const apiPublishSelection = async (data: {
+  selectionId: string;
+  published: boolean;
+  showPrice: boolean;
+}): Promise<{ ok: boolean; error?: string }> => {
+  const localSession = localStorage.getItem("session");
+  try {
+    const response = await axios.patch(`/api/selection/publish`, data, {
+      headers: { "X-Token": localSession, "Content-Type": "application/json" },
+    });
+    if (response.status === 200) return { ok: true };
+    return { ok: false, error: response.data?.error };
+  } catch (e: any) {
+    return { ok: false, error: e?.response?.data?.error };
+  }
+};
+
+export const checkUserUrlAvailable = async (
+  value: string,
+): Promise<{ available: boolean; reason?: string }> => {
+  const localSession = localStorage.getItem("session");
+  try {
+    const response = await axios.get(`/api/profile/userurl-available`, {
+      params: { value },
+      headers: { "X-Token": localSession },
+    });
+    if (response.status === 200) {
+      return response.data;
+    }
+    return { available: false };
+  } catch (e) {
+    return { available: false };
+  }
+};
+
 export const saveProfile = async (data: KeyValue): Promise<GeneralAPIError> => {
   const localSession = localStorage.getItem("session");
 

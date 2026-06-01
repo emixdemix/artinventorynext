@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateToken } from '@/server/auth'
-import { getUser, updateProfile } from '@/server/db/database'
+import { findUserByUserurl, getUser, updateProfile } from '@/server/db/database'
 import { putObject } from '@/server/s3'
 import { ARTINVENTORY_BUCKET } from '@/server/interfaces'
+import { isValidUserUrl } from '@/server/utility/slug'
 import { v4 as uuidv4 } from 'uuid'
 
 export async function GET(request: NextRequest) {
@@ -12,7 +13,10 @@ export async function GET(request: NextRequest) {
 
   const response = await getUser({ _id: userId })
   if (response) {
-    return NextResponse.json(response.profile ?? {}, { status: 200 })
+    return NextResponse.json(
+      { ...(response.profile ?? {}), plan: response.plan || 'free' },
+      { status: 200 },
+    )
   } else {
     return NextResponse.json({}, { status: 403 })
   }
@@ -43,8 +47,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (typeof body.userurl === 'string') {
+      const trimmed = body.userurl.trim().toLowerCase()
+      if (trimmed === '') {
+        body.userurl = ''
+      } else {
+        if (!isValidUserUrl(trimmed)) {
+          return NextResponse.json({ error: 'invalid_userurl' }, { status: 400 })
+        }
+        const existing = await findUserByUserurl(trimmed)
+        if (existing && String(existing._id) !== String(info._id)) {
+          return NextResponse.json({ error: 'userurl_taken' }, { status: 409 })
+        }
+        body.userurl = trimmed
+      }
+    }
+
     const profile = await updateProfile(body, info, file ? Buffer.from(await file.arrayBuffer()) : null, filename)
-    return NextResponse.json(profile, { status: 200 })
+    return NextResponse.json(
+      { ...(profile ?? {}), plan: info.plan || 'free' },
+      { status: 200 },
+    )
   } catch (e) {
     return NextResponse.json({}, { status: 500 })
   }

@@ -49,6 +49,7 @@ import {
   resizeAndConvertJPG,
 } from "../utility/image";
 import { copyObject, deleteObject, listDirObjects } from "../s3";
+import { slugify } from "../utility/slug";
 
 export const getArtPieces = async (
   query: KeyValue,
@@ -169,7 +170,9 @@ export const addMediaToArtpiece = async (
   return await pieces;
 };
 
-export const updateSelection = async (query: KeyValue): Promise<ErrorCode> => {
+export const updateSelection = async (
+  query: KeyValue,
+): Promise<ErrorCode & { addedArtpieceIds?: string[]; published?: boolean }> => {
   const client = await getDbClient();
   const db = client.db(ARTINVENTORY_DB);
   const collection = db?.collection<Selection>(SELECTIONS_COLLECTION);
@@ -181,13 +184,21 @@ export const updateSelection = async (query: KeyValue): Promise<ErrorCode> => {
       _id: new ObjectId(query.selectionId as string),
     });
     if (selection) {
+      const previousIds = new Set(
+        selection.artpieces.map((item) => item.toString()),
+      );
+      const requestedIds: string[] = (query.selections as ObjectId[]).map(
+        (item) => item.toString(),
+      );
       if (query.replace) {
         final = query.selections as ObjectId[];
       } else {
         const ap = selection.artpieces.map((item) => item.toString());
-        const qs = query.selections.map((item: ObjectId) => item.toString());
-        final = [...new Set([...ap, ...qs])];
+        final = [...new Set([...ap, ...requestedIds])];
       }
+      const addedArtpieceIds = requestedIds.filter(
+        (id) => !previousIds.has(id),
+      );
 
       const result = await collection.updateOne(
         { _id: selection._id },
@@ -197,7 +208,12 @@ export const updateSelection = async (query: KeyValue): Promise<ErrorCode> => {
           },
         },
       );
-      return { code: 0x0000, description: "ok" };
+      return {
+        code: 0x0000,
+        description: "ok",
+        addedArtpieceIds,
+        published: !!selection.published,
+      };
     } else {
       return { code: 0x0001, description: "Selection not found" };
     }
@@ -251,6 +267,327 @@ export const removeFromSelection = async (
   }
 
   return { code: 0x0003, description: "Cannot execute command" };
+};
+
+export interface PublicSelectionResult {
+  selection: {
+    _id: ObjectId;
+    name: string;
+    showPrice: boolean;
+    publishedAt?: number;
+  };
+  owner: {
+    _id: ObjectId;
+    userurl: string;
+    name?: string;
+    statement?: string;
+    picture?: string;
+    signature?: string;
+    valuta?: string;
+  };
+  artpieces: Array<{
+    _id: ObjectId;
+    title: string;
+    dimensions: string;
+    media: string;
+    description: string;
+    creation_date: string;
+    price: number;
+    pictureIds: string[];
+  }>;
+}
+
+export const getPublicSelection = async (
+  userurl: string,
+  selectionSlug: string,
+): Promise<PublicSelectionResult | null> => {
+  const client = await getDbClient();
+  const db = client.db(ARTINVENTORY_DB);
+
+  const usersCollection = db?.collection<User>(USERS_COLLECTION);
+  const user = await usersCollection.findOne({ "profile.userurl": userurl });
+  if (!user) return null;
+
+  const selectionsCollection = db?.collection<Selection>(SELECTIONS_COLLECTION);
+  const owned = await selectionsCollection
+    .find({ owner: user._id, published: true })
+    .toArray();
+  const match = owned.find((s) => slugify(s.name) === selectionSlug);
+  if (!match) return null;
+
+  const artpiecesCollection = db?.collection<ArtPiece>(ARTPIECES_COLLECTION);
+  const artpieces = match.artpieces?.length
+    ? await artpiecesCollection
+        .find({ _id: { $in: match.artpieces } })
+        .toArray()
+    : [];
+  const orderMap = new Map(
+    (match.artpieces || []).map((id, idx) => [id.toString(), idx]),
+  );
+  artpieces.sort(
+    (a, b) =>
+      (orderMap.get(a._id.toString()) ?? 0) -
+      (orderMap.get(b._id.toString()) ?? 0),
+  );
+
+  return {
+    selection: {
+      _id: match._id,
+      name: match.name,
+      showPrice: !!match.showPrice,
+      publishedAt: match.publishedAt,
+    },
+    owner: {
+      _id: user._id,
+      userurl: user.profile?.userurl || userurl,
+      name: user.profile?.name,
+      statement: user.profile?.statement,
+      picture: user.profile?.picture,
+      signature: user.profile?.signature,
+      valuta: user.profile?.valuta,
+    },
+    artpieces: artpieces.map((p) => ({
+      _id: p._id,
+      title: p.title,
+      dimensions: p.dimensions,
+      media: p.media,
+      description: p.description,
+      creation_date: p.creation_date,
+      price: p.price,
+      pictureIds: (p.pictureId || []).map((id) => id.toString()),
+    })),
+  };
+};
+
+export const getOwnedSelectionForPreview = async (
+  selectionId: string,
+  ownerId: ObjectId,
+): Promise<PublicSelectionResult | null> => {
+  const client = await getDbClient();
+  const db = client.db(ARTINVENTORY_DB);
+
+  const selectionsCollection = db?.collection<Selection>(SELECTIONS_COLLECTION);
+  let _id: ObjectId;
+  try {
+    _id = new ObjectId(selectionId);
+  } catch {
+    return null;
+  }
+  const selection = await selectionsCollection.findOne({ _id, owner: ownerId });
+  if (!selection) return null;
+
+  const usersCollection = db?.collection<User>(USERS_COLLECTION);
+  const user = await usersCollection.findOne({ _id: ownerId });
+  if (!user) return null;
+
+  const artpiecesCollection = db?.collection<ArtPiece>(ARTPIECES_COLLECTION);
+  const artpieces = selection.artpieces?.length
+    ? await artpiecesCollection
+        .find({ _id: { $in: selection.artpieces } })
+        .toArray()
+    : [];
+  const orderMap = new Map(
+    (selection.artpieces || []).map((id, idx) => [id.toString(), idx]),
+  );
+  artpieces.sort(
+    (a, b) =>
+      (orderMap.get(a._id.toString()) ?? 0) -
+      (orderMap.get(b._id.toString()) ?? 0),
+  );
+
+  return {
+    selection: {
+      _id: selection._id,
+      name: selection.name,
+      showPrice: !!selection.showPrice,
+      publishedAt: selection.publishedAt,
+    },
+    owner: {
+      _id: user._id,
+      userurl: user.profile?.userurl || "",
+      name: user.profile?.name,
+      statement: user.profile?.statement,
+      picture: user.profile?.picture,
+      signature: user.profile?.signature,
+      valuta: user.profile?.valuta,
+    },
+    artpieces: artpieces.map((p) => ({
+      _id: p._id,
+      title: p.title,
+      dimensions: p.dimensions,
+      media: p.media,
+      description: p.description,
+      creation_date: p.creation_date,
+      price: p.price,
+      pictureIds: (p.pictureId || []).map((id) => id.toString()),
+    })),
+  };
+};
+
+export const getPicturesByIds = async (
+  pictureIds: string[],
+): Promise<Array<{ _id: ObjectId; url: string }>> => {
+  const client = await getDbClient();
+  const db = client.db(ARTINVENTORY_DB);
+  const picturesCollection = db?.collection<Picture>(PICTURES_COLLECTION);
+  const objectIds: ObjectId[] = [];
+  for (const id of pictureIds) {
+    try {
+      objectIds.push(new ObjectId(id));
+    } catch {
+      // skip invalid ids
+    }
+  }
+  if (!objectIds.length) return [];
+  const pictures = await picturesCollection
+    .find({ _id: { $in: objectIds } })
+    .toArray();
+  return pictures.map((p) => ({ _id: p._id, url: p.url }));
+};
+
+export const isPictureInPublishedSelection = async (
+  userurl: string,
+  selectionSlug: string,
+  pictureId: string,
+): Promise<{ ok: boolean; ownerId?: ObjectId; key?: string }> => {
+  const client = await getDbClient();
+  const db = client.db(ARTINVENTORY_DB);
+
+  const usersCollection = db?.collection<User>(USERS_COLLECTION);
+  const user = await usersCollection.findOne({ "profile.userurl": userurl });
+  if (!user) return { ok: false };
+
+  const selectionsCollection = db?.collection<Selection>(SELECTIONS_COLLECTION);
+  const owned = await selectionsCollection
+    .find({ owner: user._id, published: true })
+    .toArray();
+  const match = owned.find((s) => slugify(s.name) === selectionSlug);
+  if (!match) return { ok: false };
+
+  const artpiecesCollection = db?.collection<ArtPiece>(ARTPIECES_COLLECTION);
+  const pictureObjectId = new ObjectId(pictureId);
+  const artpiece = await artpiecesCollection.findOne({
+    _id: { $in: match.artpieces || [] },
+    pictureId: pictureObjectId,
+  });
+  if (!artpiece) return { ok: false };
+
+  const picturesCollection = db?.collection<Picture>(PICTURES_COLLECTION);
+  const picture = await picturesCollection.findOne({ _id: pictureObjectId });
+  if (!picture) return { ok: false };
+
+  return { ok: true, ownerId: user._id, key: `${user._id}/${picture.url}` };
+};
+
+export const setSelectionPublished = async (query: {
+  selectionId: string;
+  owner: ObjectId;
+  published: boolean;
+  showPrice: boolean;
+}): Promise<ErrorCode> => {
+  const client = await getDbClient();
+  const db = client.db(ARTINVENTORY_DB);
+  const collection = db?.collection<Selection>(SELECTIONS_COLLECTION);
+
+  const _id = new ObjectId(query.selectionId);
+  const selection = await collection.findOne({ _id, owner: query.owner });
+  if (!selection) {
+    return { code: 0x0001, description: "Selection not found" };
+  }
+
+  const update: KeyValue = {
+    published: query.published,
+    showPrice: query.showPrice,
+  };
+  if (query.published) {
+    update.publishedAt = Date.now();
+  }
+
+  await collection.updateOne({ _id }, { $set: update });
+  return { code: 0x0000, description: "ok" };
+};
+
+export const getSelectionPictureKeys = async (
+  selectionId: string,
+  ownerId: ObjectId,
+): Promise<{ pictureId: string; key: string }[]> => {
+  const client = await getDbClient();
+  const db = client.db(ARTINVENTORY_DB);
+
+  let _id: ObjectId;
+  try {
+    _id = new ObjectId(selectionId);
+  } catch {
+    return [];
+  }
+
+  const selection = await db
+    ?.collection<Selection>(SELECTIONS_COLLECTION)
+    .findOne({ _id, owner: ownerId });
+  if (!selection || !selection.artpieces?.length) return [];
+
+  const artpieces = await db
+    ?.collection<ArtPiece>(ARTPIECES_COLLECTION)
+    .find({ _id: { $in: selection.artpieces } })
+    .toArray();
+
+  const pictureIds: ObjectId[] = [];
+  for (const piece of artpieces) {
+    for (const pid of piece.pictureId || []) {
+      pictureIds.push(pid);
+    }
+  }
+  if (!pictureIds.length) return [];
+
+  const pictures = await db
+    ?.collection<Picture>(PICTURES_COLLECTION)
+    .find({ _id: { $in: pictureIds } })
+    .toArray();
+
+  return pictures.map((p) => ({
+    pictureId: p._id.toString(),
+    key: `${ownerId.toString()}/${p.url}`,
+  }));
+};
+
+export const getArtpiecesPictureKeys = async (
+  artpieceIds: string[],
+  ownerId: ObjectId,
+): Promise<{ pictureId: string; key: string }[]> => {
+  if (!artpieceIds.length) return [];
+  const client = await getDbClient();
+  const db = client.db(ARTINVENTORY_DB);
+
+  const ids: ObjectId[] = [];
+  for (const id of artpieceIds) {
+    try {
+      ids.push(new ObjectId(id));
+    } catch {}
+  }
+  if (!ids.length) return [];
+
+  const artpieces = await db
+    ?.collection<ArtPiece>(ARTPIECES_COLLECTION)
+    .find({ _id: { $in: ids }, owner: ownerId })
+    .toArray();
+
+  const pictureIds: ObjectId[] = [];
+  for (const piece of artpieces) {
+    for (const pid of piece.pictureId || []) {
+      pictureIds.push(pid);
+    }
+  }
+  if (!pictureIds.length) return [];
+
+  const pictures = await db
+    ?.collection<Picture>(PICTURES_COLLECTION)
+    .find({ _id: { $in: pictureIds } })
+    .toArray();
+
+  return pictures.map((p) => ({
+    pictureId: p._id.toString(),
+    key: `${ownerId.toString()}/${p.url}`,
+  }));
 };
 
 export const getArtSelections = async (
@@ -1075,6 +1412,16 @@ export const getUser = async (query: KeyValue): Promise<WithId<User>> => {
   return user[0];
 };
 
+export const findUserByUserurl = async (
+  userurl: string,
+): Promise<WithId<User> | null> => {
+  const client = await getDbClient();
+  const db = client.db(ARTINVENTORY_DB);
+  const collection = db?.collection<User>(USERS_COLLECTION);
+  const user = await collection.findOne({ "profile.userurl": userurl });
+  return user;
+};
+
 export const upsertUserPushToken = async (
   userId: ObjectId,
   token: string,
@@ -1254,6 +1601,10 @@ export const updateProfile = async (
     u.profile.describe = query.describe;
   }
 
+  if (query.userurl !== undefined) {
+    u.profile.userurl = query.userurl || undefined;
+  }
+
   if (query.measures !== undefined) {
     u.profile.measures = query.measures;
   }
@@ -1303,6 +1654,7 @@ export const addUser = async (
       email: query.email,
       password: query.password,
       name: "",
+      plan: "free",
       profile: {
         name: query.email,
         picture: "",

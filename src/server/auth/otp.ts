@@ -3,7 +3,7 @@ import { WithId } from 'mongodb'
 
 import { addCategory, addUser, getUser, saveLoginInfo } from '@/server/db/database'
 import { del, get, set } from '@/server/db/session'
-import { CategoryTypes, ErrorCode, RedisData, User } from '@/server/interfaces'
+import { CategoryTypes, ErrorCode, RedisData, User, UserPlan } from '@/server/interfaces'
 import { sendOTPCode, sendPostRegistration } from '@/server/email/sendgrid'
 import bcrypt from 'bcrypt'
 
@@ -23,7 +23,7 @@ export type OtpResult =
   | { ok: false; status: number }
 
 export type VerifyResult =
-  | { ok: true; session: string; profile: unknown; email: string }
+  | { ok: true; session: string; profile: unknown; email: string; plan: UserPlan }
   | { ok: false; status: number }
 
 export const accountExists = async (email: string): Promise<boolean> => {
@@ -72,7 +72,13 @@ export const verifyLoginOtp = async (
   const session = uuidv4()
   await set({ key: session, data: user, timetolive: SESSION_TTL_MS })
 
-  return { ok: true, session, profile: user.profile, email: user.email }
+  return {
+    ok: true,
+    session,
+    profile: user.profile,
+    email: user.email,
+    plan: user.plan || 'free',
+  }
 }
 
 export const requestSignupOtp = async (email: string): Promise<OtpResult> => {
@@ -144,5 +150,11 @@ export const verifySignupOtp = async (
   const session = uuidv4()
   await set({ key: session, data: user, timetolive: SESSION_TTL_MS })
 
-  return { ok: true, session, profile: user.profile, email: user.email }
+  return {
+    ok: true,
+    session,
+    profile: user.profile,
+    email: user.email,
+    plan: user.plan || 'free',
+  }
 }

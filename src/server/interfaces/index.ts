@@ -40,6 +40,9 @@ export interface Selection {
   owner: ObjectId;
   artpieces: ObjectId[];
   name: string;
+  published?: boolean;
+  showPrice?: boolean;
+  publishedAt?: number;
 }
 
 export interface Category {
@@ -116,6 +119,7 @@ export interface UserProfile {
   backurl: string;
   measures: string;
   valuta: string;
+  userurl?: string;
   pushTokens?: PushToken[];
   devices?: LinkedDevice[];
 }
@@ -125,11 +129,14 @@ export interface Logins {
   createdAt: number;
 }
 
+export type UserPlan = 'free' | 'intermediate' | 'full';
+
 export interface User {
   name: string;
   email: string;
   password: string;
   profile: UserProfile;
+  plan?: UserPlan;
 }
 
 export interface Address {

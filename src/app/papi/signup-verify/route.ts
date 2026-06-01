@@ -18,7 +18,12 @@ export async function POST(request: NextRequest) {
   if (!result.ok) return NextResponse.json({}, { status: result.status })
 
   return NextResponse.json(
-    { session: result.session, profile: result.profile, email: result.email },
+    {
+      session: result.session,
+      profile: result.profile,
+      email: result.email,
+      plan: result.plan,
+    },
     { status: 200 },
   )
 }

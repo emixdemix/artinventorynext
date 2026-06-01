@@ -15,6 +15,7 @@ export const Header = () => {
    const [visible, setVisible] = useState(false)
    const [over, setOver] = useState(false)
    const [showLogout, setShowLogout] = useState(false)
+   const [showReportsUpsell, setShowReportsUpsell] = useState(false)
    const [avatar, setAvatar] = useState('')
    const refImage = useRef(null)
    const refMenu = useRef(null)
@@ -22,6 +23,15 @@ export const Header = () => {
    const store = useContext(ContextStorage);
    const { t } = useTranslation()
    const router = useRouter()
+   const planAllowsReports = (store.profile?.plan || 'free') !== 'free'
+
+   const onReportsClick = () => {
+      if (planAllowsReports) {
+         router.push('/reports')
+      } else {
+         setShowReportsUpsell(true)
+      }
+   }
 
 
    useEffect(() => {
@@ -69,7 +79,12 @@ export const Header = () => {
                      <div className={`submenu ${menuOpen ? "open" : "close"}`}>
                         <p onClick={() => router.push('/shows')}>{t('general.menu.shows')}</p>
                         <p onClick={() => router.push('/customers')}>{t('general.menu.customers')}</p>
-                        <p onClick={() => router.push('/reports')}>{t('general.menu.reports')}</p>
+                        <p
+                           onClick={onReportsClick}
+                           className={planAllowsReports ? '' : 'menuItem disabled'}
+                        >
+                           {t('general.menu.reports')}
+                        </p>
                         <p onClick={() => router.push('/selection')}>{t('general.menu.selections')}</p>
                         <p onClick={() => router.push('/organize')}>{t('general.menu.settings')}</p>
                      </div>
@@ -99,7 +114,19 @@ export const Header = () => {
 
                      <p onClick={() => { setVisible(false); router.push('/shows')}}>{t('general.menu.shows')}</p>
                      <p onClick={() => { setVisible(false); router.push('/customers')}}>{t('general.menu.customers')}</p>
-                     <p onClick={() => { setVisible(false); router.push('/reports') }}>{t('general.menu.reports')}</p>               
+                     <p
+                        onClick={() => {
+                           setVisible(false)
+                           if (planAllowsReports) {
+                              router.push('/reports')
+                           } else {
+                              setShowReportsUpsell(true)
+                           }
+                        }}
+                        className={planAllowsReports ? '' : 'menuItem disabled'}
+                     >
+                        {t('general.menu.reports')}
+                     </p>
                      <p onClick={() => { setVisible(false); router.push('/selection')}}>{t('general.menu.selections')}</p>
                      <p onClick={() => { setVisible(false); router.push('/organize') }}>{t('general.menu.settings')}</p>
 
@@ -116,6 +143,12 @@ export const Header = () => {
             <div className="buttonblock">
                <button className="secondaryButton" onClick={() => setShowLogout(false)}>{t('general.cancel')}</button>
                <button className="primaryButton" onClick={() => { router.push('/logout') }}>{t('general.logout')}</button>
+            </div>
+         </Modal>
+         <Modal title={t('general.plan.upsell.title')} closeicon={""} visible={showReportsUpsell} onClose={() => setShowReportsUpsell(false)}>
+            <p>{t('general.plan.upgrade.intermediate')}</p>
+            <div className="buttonblock">
+               <button className="primaryButton" onClick={() => setShowReportsUpsell(false)}>{t('general.plan.upsell.close')}</button>
             </div>
          </Modal>
       </>

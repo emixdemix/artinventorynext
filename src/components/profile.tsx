@@ -5,7 +5,7 @@ import { CategoryTypes, KeyValue, StoreContext } from "../interfaces";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import { useTranslation } from "react-i18next";
-import { emitStore, saveProfile, useAppStateListener } from "./utility";
+import { checkUserUrlAvailable, emitStore, saveProfile, useAppStateListener } from "./utility";
 import { Modal } from "./modal";
 import AvatarEditor from 'react-avatar-editor'
 const emptyprofile = '/images/profileback.svg'
@@ -16,6 +16,9 @@ export const PersonalInformation = () => {
    const [name, setName] = useState('')
    const [describe, setDescribe] = useState('')
    const [website, setWebsite] = useState('')
+   const [userurl, setUserurl] = useState('')
+   const [initialUserurl, setInitialUserurl] = useState('')
+   const [userurlError, setUserurlError] = useState('')
    const [file, setFile] = useState<File>()
    const [avatar, setAvatar] = useState(false)
    const [image, setImage] = useState(emptyprofile)
@@ -24,42 +27,74 @@ export const PersonalInformation = () => {
    const editorRef = useRef<AvatarEditor | null>(null);
    const fileUpload = useRef<HTMLInputElement>(null);
 
+   const applyProfile = (p: KeyValue) => {
+      setImage(p.picture ? `data:image/png;base64,${p.picture}` : emptyprofile)
+      setName(p.name || '')
+      setDescribe(p.describe || '')
+      setWebsite(p.website || '')
+      setUserurl(p.userurl || '')
+      setInitialUserurl(p.userurl || '')
+   }
+
    useEffect(()=>{
       if (store.profile) {
-         setImage(store.profile.picture
-            ? `data:image/png;base64,${store.profile.picture}`
-            : emptyprofile)
-         setName(store.profile.name)
-         setDescribe(store.profile.describe)
-         setWebsite(store.profile.website)
+         applyProfile(store.profile)
       }
    },[store])
 
    useAppStateListener(store=> {
       if (store.profile) {
-         setImage(store.profile.picture
-            ? `data:image/png;base64,${store.profile.picture}`
-            : emptyprofile)
-         setName(store.profile.name)
-         setDescribe(store.profile.describe)
-         setWebsite(store.profile.website)
+         applyProfile(store.profile)
       }
    })
 
+   const onUserurlBlur = async () => {
+      const value = userurl.trim().toLowerCase()
+      if (value !== userurl) {
+         setUserurl(value)
+      }
+      if (!value) {
+         setUserurlError('')
+         return
+      }
+      if (value === initialUserurl) {
+         setUserurlError('')
+         return
+      }
+      const res = await checkUserUrlAvailable(value)
+      if (res.available) {
+         setUserurlError('')
+      } else if (res.reason === 'taken') {
+         setUserurlError(t('general.userurl.taken'))
+      } else {
+         setUserurlError(t('general.userurl.invalid'))
+      }
+   }
+
    const save = async () => {
+      if (userurlError) return
       const formData = new FormData()
 
       formData.append("name", name)
       formData.append("describe", describe)
       formData.append("website", website)
+      formData.append("userurl", userurl.trim().toLowerCase())
       formData.append("filetype", "avatar")
-      
+
       if (file) {
          formData.append("document", file);
          formData.append("originalname", file.name)
-      } 
+      }
 
       const response = await saveProfile(formData)
+      if (response.error) {
+         const err =
+            (response.response as any)?.e?.response?.data?.error ||
+            (response.response as any)?.data?.error
+         if (err === 'userurl_taken') setUserurlError(t('general.userurl.taken'))
+         else if (err === 'invalid_userurl') setUserurlError(t('general.userurl.invalid'))
+         return
+      }
       emitStore({key:'profile', value: response, store:true})
       router.refresh()
    }
@@ -73,9 +108,21 @@ export const PersonalInformation = () => {
       }
    };
 
+   const currentPlan = store.profile?.plan || 'free'
+   const planLabel =
+      currentPlan === 'full'
+         ? t('general.plan.full')
+         : currentPlan === 'intermediate'
+            ? t('general.plan.intermediate')
+            : t('general.plan.free')
+
    return (
       <section className="pinfo">
          <p className="strong paddingV">{t('general.explain.profilepersonal')}</p>
+         <div className="inputfield">
+            <label>{t('general.plan.label')}</label>
+            <p className="smallText">{planLabel}</p>
+         </div>
          <div className="inputfield">
              <label>{t('general.picture')}</label>
             <input type="file" onChange={handleImgChange} ref={fileUpload} hidden />
@@ -97,6 +144,22 @@ export const PersonalInformation = () => {
          <div className="inputfield">
             <label>{t('general.website')}</label>
             <input type="text" name="website" value={website} onChange={(e) => setWebsite(e.target.value)} />
+         </div>
+         <div className="inputfield">
+            <label>{t('general.userurl.label')}</label>
+            <input
+               type="text"
+               name="userurl"
+               value={userurl}
+               placeholder={t('general.userurl.placeholder')}
+               onChange={(e) => { setUserurl(e.target.value); setUserurlError('') }}
+               onBlur={onUserurlBlur}
+            />
+            <p className="smallerText">{t('general.userurl.help')}</p>
+            {userurl && !userurlError && (
+               <p className="smallerText">{t('general.userurl.preview', { url: `artinventory.de/${userurl.trim().toLowerCase()}` })}</p>
+            )}
+            {userurlError && <p className="smallerText error">{userurlError}</p>}
          </div>
          <div className="buttonblock">
             <button className="primaryButton" onClick={() => { save() }}>{t('general.save')}</button>

@@ -38,11 +38,15 @@ export interface Reports {
    signature: string
    front: string
    back: string
-   fronturl: string 
+   fronturl: string
    backurl: string
    measures: string
    valuta: string
+   userurl?: string
+   plan?: UserPlan
 }
+
+export type UserPlan = 'free' | 'intermediate' | 'full'
 
 export interface StoreContext {
    profile?: Profile
@@ -89,6 +93,9 @@ export interface ArtSelection {
    _id?: string
    name: string
    artpieces: ArtPiece[]
+   published?: boolean
+   showPrice?: boolean
+   publishedAt?: number
 }
 
 export interface ShowPicture {

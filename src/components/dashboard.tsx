@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
+import { ContextStorage } from "../store"
 import { apiSaveMediaToArtipiece, emitStore, getArtPieces, getCategories, getSelections, hideWaiting, saveNewList, showWaiting, updateArtPiecesOrder, useAddMoreMediaListener, useSelectRowListener, useSwapListener } from "./utility"
 import { ArtPiece, ArtSelection, Category, KeyValue, MediaData } from "../interfaces"
 import { ArtPieceLine } from "./artpieceline"
@@ -159,12 +160,14 @@ export const Dashboard = () => {
    const [addMoreMedia, setAddMoreMedia] = useState('')
    const [mediaSelected, setMediaSelected] = useState([] as MediaData[])
    const [showManageSelection, setShowManageSelection] = useState(false)
+   const [showReportsUpsell, setShowReportsUpsell] = useState(false)
    const [selectedFilters, setSelectedFilters] = useState<{ [key: string]: MultiValue<Category> }>({ arttype: [], status: [], category: [] })
    const filterRef = useRef<HTMLDivElement>(null)
    const router = useRouter()
    const { t } = useTranslation()
+   const dashStore = useContext(ContextStorage)
+   const planAllowsReports = (dashStore.profile?.plan || 'free') !== 'free'
 
-   
    const listOptions = [
       { label: t('general.createList'), value: 'createList' },
       { label: t('general.createReport'), value: "report" },
@@ -310,6 +313,10 @@ export const Dashboard = () => {
             setShowSelect(true)
             break
          case 'report':
+            if (!planAllowsReports) {
+               setShowReportsUpsell(true)
+               break
+            }
             sessionStorage.setItem('routeState', JSON.stringify(selected))
             router.push('/reports')
             break
@@ -526,6 +533,13 @@ export const Dashboard = () => {
                   <button className="primaryButton" onClick={() => { executeCommand() }}>{t('general.go')}</button>
                </div>
 
+            </div>
+         </Modal>
+
+         <Modal title={t('general.plan.upsell.title')} closeicon={""} visible={showReportsUpsell} onClose={() => setShowReportsUpsell(false)}>
+            <p>{t('general.plan.upgrade.intermediate')}</p>
+            <div className="buttonblock">
+               <button className="primaryButton" onClick={() => setShowReportsUpsell(false)}>{t('general.plan.upsell.close')}</button>
             </div>
          </Modal>
 

@@ -106,7 +106,7 @@ export const ReportsComponent = () => {
 
     if (Array.isArray(state) && state.length > 0) {
       setSelected(state);
-      setTabIndex(1);
+      setTabIndex(0);
     }
   }, []);
 
@@ -224,39 +224,10 @@ export const ReportsComponent = () => {
     <>
       <Tabs selectedIndex={tabIndex} onSelect={(index) => setTabIndex(index)}>
         <TabList>
-          <Tab>{t("general.stats.title")}</Tab>
           <Tab>{t("general.reports")}</Tab>
+          <Tab>{t("general.stats.title")}</Tab>
         </TabList>
 
-        <TabPanel>
-          {stats && Object.keys(stats).length > 0 && (
-            <div className="statistics">
-              <StatusPie
-                key="cat"
-                dataset={stats.categories}
-                seed="category"
-                title={t("general.stats.categoryTitle")}
-              />
-              <StatusPie
-                key="art"
-                dataset={stats.arttpyes}
-                seed="arttype1"
-                title={t("general.stats.arttypeTitle")}
-              />
-              <StatusPie
-                key="status"
-                dataset={stats.statuses}
-                seed="statuses1"
-                title={t("general.stats.statusTitle")}
-              />
-            </div>
-          )}
-          {!stats && (
-            <section className="nochart">
-              <img src={graypie} />
-            </section>
-          )}
-        </TabPanel>
         <TabPanel>
           <section className="reportMain">
             <p className="">{t("general.howtoreport")}</p>
@@ -544,6 +515,35 @@ export const ReportsComponent = () => {
               </div>
             </Modal>
           </section>
+        </TabPanel>
+        <TabPanel>
+          {stats && Object.keys(stats).length > 0 && (
+            <div className="statistics">
+              <StatusPie
+                key="cat"
+                dataset={stats.categories}
+                seed="category"
+                title={t("general.stats.categoryTitle")}
+              />
+              <StatusPie
+                key="art"
+                dataset={stats.arttpyes}
+                seed="arttype1"
+                title={t("general.stats.arttypeTitle")}
+              />
+              <StatusPie
+                key="status"
+                dataset={stats.statuses}
+                seed="statuses1"
+                title={t("general.stats.statusTitle")}
+              />
+            </div>
+          )}
+          {!stats && (
+            <section className="nochart">
+              <img src={graypie} />
+            </section>
+          )}
         </TabPanel>
       </Tabs>
     </>

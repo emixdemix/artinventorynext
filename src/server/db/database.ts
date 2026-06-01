@@ -41,6 +41,7 @@ import {
   Logins,
   Customer,
   Template,
+  UserPlan,
 } from "../interfaces";
 import sharp from "sharp";
 import {
@@ -1420,6 +1421,20 @@ export const findUserByUserurl = async (
   const collection = db?.collection<User>(USERS_COLLECTION);
   const user = await collection.findOne({ "profile.userurl": userurl });
   return user;
+};
+
+export const setUserPlan = async (
+  email: string,
+  plan: UserPlan,
+): Promise<boolean> => {
+  const client = await getDbClient();
+  const db = client.db(ARTINVENTORY_DB);
+  const collection = db?.collection<User>(USERS_COLLECTION);
+  const result = await collection.updateOne(
+    { email },
+    { $set: { plan } },
+  );
+  return result.matchedCount > 0;
 };
 
 export const upsertUserPushToken = async (

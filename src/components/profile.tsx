@@ -122,6 +122,13 @@ export const PersonalInformation = () => {
          <div className="inputfield">
             <label>{t('general.plan.label')}</label>
             <p className="smallText">{planLabel}</p>
+            <button
+               type="button"
+               className="secondaryButton"
+               onClick={() => router.push('/plan')}
+            >
+               {t('general.plan.changeButton')}
+            </button>
          </div>
          <div className="inputfield">
              <label>{t('general.picture')}</label>

@@ -485,6 +485,30 @@ export const saveProfile = async (data: KeyValue): Promise<GeneralAPIError> => {
   }
 };
 
+export const createDodoCheckout = async (
+  plan: "intermediate" | "full",
+): Promise<{ checkoutUrl: string } | { error: string }> => {
+  const localSession = localStorage.getItem("session");
+  try {
+    const response = await axios.post(
+      `/api/dodo/checkout`,
+      { plan },
+      {
+        headers: {
+          "X-Token": localSession,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    if (response.status === 200 && response.data?.checkoutUrl) {
+      return { checkoutUrl: response.data.checkoutUrl };
+    }
+    return { error: response.data?.error || "checkout_failed" };
+  } catch (e: any) {
+    return { error: e?.response?.data?.error || "checkout_failed" };
+  }
+};
+
 export const convertIsoDate = (iso: string) => {
   const d = new Date(iso);
   let day = d.getDate() >= 10 ? d.getDate() : `0${d.getDate()}`;

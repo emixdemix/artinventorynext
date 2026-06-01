@@ -243,16 +243,22 @@ export const Selections = () => {
             </section>
 
             <Modal size="small" title={t('general.plan.upsell.title')} closeicon={""} visible={showReportsUpsell} onClose={() => setShowReportsUpsell(false)}>
-               <p>{t('general.plan.upgrade.intermediate')}</p>
-               <div className="buttonblock">
-                  <button className="primaryButton" onClick={() => setShowReportsUpsell(false)}>{t('general.plan.upsell.close')}</button>
+               <div className="upsellModal">
+                  <p>{t('general.plan.upgrade.intermediate')}</p>
+                  <div className="buttonblock">
+                     <button className="secondaryButton" onClick={() => setShowReportsUpsell(false)}>{t('general.cancel')}</button>
+                     <button className="primaryButton" onClick={() => { setShowReportsUpsell(false); router.push('/plan') }}>{t('general.plan.upsell.upgrade')}</button>
+                  </div>
                </div>
             </Modal>
 
             <Modal size="small" title={t('general.plan.upsell.title')} closeicon={""} visible={showPublishUpsell} onClose={() => setShowPublishUpsell(false)}>
-               <p>{t('general.plan.upgrade.full')}</p>
-               <div className="buttonblock">
-                  <button className="primaryButton" onClick={() => setShowPublishUpsell(false)}>{t('general.plan.upsell.close')}</button>
+               <div className="upsellModal">
+                  <p>{t('general.plan.upgrade.full')}</p>
+                  <div className="buttonblock">
+                     <button className="secondaryButton" onClick={() => setShowPublishUpsell(false)}>{t('general.cancel')}</button>
+                     <button className="primaryButton" onClick={() => { setShowPublishUpsell(false); router.push('/plan') }}>{t('general.plan.upsell.upgrade')}</button>
+                  </div>
                </div>
             </Modal>
 

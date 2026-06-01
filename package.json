@@ -16,6 +16,8 @@
     "bcrypt": "^6.0.0",
     "chart.js": "^4.4.8",
     "dayjs": "^1.11.13",
+    "dodopayments": "^2.33.0",
+    "dodopayments-checkout": "^1.8.0",
     "embla-carousel-react": "^8.6.0",
     "firebase-admin": "^13.9.0",
     "i18next": "^23.6.0",

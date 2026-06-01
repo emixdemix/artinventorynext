@@ -39,9 +39,56 @@
         "intermediate": "Intermediate",
         "full": "Full",
         "current": "Your current plan: {{plan}}",
+        "changeTitle": "Change your plan",
+        "changeButton": "Change plan",
+        "currentBadge": "Current plan",
+        "upgradeTo": "Upgrade to {{plan}}",
+        "switching": "Opening checkout",
+        "error": "Something went wrong. Please try again.",
+        "thankYouTitle": "Thank you",
+        "thankYouMessage": "Your subscription is active. Welcome to your new plan.",
+        "failedTitle": "Payment failed",
+        "failedMessage": "The payment did not complete. You can try again from this page.",
+        "comingSoonTitle": "Plans coming soon",
+        "comingSoonMessage": "Plan upgrades will be available shortly.",
+        "amount": {
+          "free": "Free",
+          "intermediate": "49 €",
+          "full": "99 €"
+        },
+        "period": "/ year",
+        "description": {
+          "free": "Manage your inventory with the basics.",
+          "intermediate": "Unlock reports and advanced inventory features.",
+          "full": "Everything in Intermediate plus a public website to showcase your work."
+        },
+        "features": {
+          "free": [
+            "Manage your media files",
+            "Organize your artworks",
+            "List your shows and receive alerts",
+            "Categorize sold pieces",
+            "Handle your customers",
+            "Create custom lists"
+          ],
+          "intermediate": [
+            "Create report from custom list",
+            "Customize front and last page",
+            "Get statistics about your work"
+          ],
+          "full": [
+            "Create custom public view",
+            "Manage the artwork to show with ease"
+          ]
+        },
+        "featuresIntro": {
+          "intermediate": "All features from free plan plus",
+          "full": "All features from the intermediate plan plus"
+        },
         "upsell": {
           "title": "Feature locked",
-          "close": "Got it"
+          "close": "Got it",
+          "upgrade": "Upgrade"
         },
         "upgrade": {
           "intermediate": "Reports require the Intermediate plan.",
@@ -409,9 +456,56 @@
         "intermediate": "Intermedio",
         "full": "Full",
         "current": "Il tuo piano attuale: {{plan}}",
+        "changeTitle": "Cambia il tuo piano",
+        "changeButton": "Cambia piano",
+        "currentBadge": "Piano attuale",
+        "upgradeTo": "Passa a {{plan}}",
+        "switching": "Apertura del checkout",
+        "error": "Qualcosa è andato storto. Riprova.",
+        "thankYouTitle": "Grazie",
+        "thankYouMessage": "Il tuo abbonamento è attivo. Benvenuto nel nuovo piano.",
+        "failedTitle": "Pagamento non riuscito",
+        "failedMessage": "Il pagamento non è stato completato. Puoi riprovare da questa pagina.",
+        "comingSoonTitle": "Piani in arrivo",
+        "comingSoonMessage": "L'aggiornamento dei piani sarà disponibile a breve.",
+        "amount": {
+          "free": "Gratuito",
+          "intermediate": "49 €",
+          "full": "99 €"
+        },
+        "period": "/ anno",
+        "description": {
+          "free": "Gestisci il tuo inventario con le funzionalità di base.",
+          "intermediate": "Sblocca i Report e le funzionalità avanzate dell'inventario.",
+          "full": "Tutto ciò che è incluso in Intermedio, più un sito pubblico per mostrare le tue opere."
+        },
+        "features": {
+          "free": [
+            "Gestisci i tuoi file multimediali",
+            "Organizza le tue opere",
+            "Elenca le tue mostre e ricevi avvisi",
+            "Categorizza i pezzi venduti",
+            "Gestisci i tuoi clienti",
+            "Crea liste personalizzate"
+          ],
+          "intermediate": [
+            "Crea report da liste personalizzate",
+            "Personalizza copertina e ultima pagina",
+            "Ottieni statistiche sul tuo lavoro"
+          ],
+          "full": [
+            "Crea una vista pubblica personalizzata",
+            "Gestisci con facilità le opere da mostrare"
+          ]
+        },
+        "featuresIntro": {
+          "intermediate": "Tutte le funzionalità del piano gratuito più",
+          "full": "Tutte le funzionalità del piano intermedio più"
+        },
         "upsell": {
           "title": "Funzionalità non disponibile",
-          "close": "Ho capito"
+          "close": "Ho capito",
+          "upgrade": "Aggiorna"
         },
         "upgrade": {
           "intermediate": "I Report richiedono il piano Intermedio.",

@@ -537,9 +537,12 @@ export const Dashboard = () => {
          </Modal>
 
          <Modal title={t('general.plan.upsell.title')} closeicon={""} visible={showReportsUpsell} onClose={() => setShowReportsUpsell(false)}>
-            <p>{t('general.plan.upgrade.intermediate')}</p>
-            <div className="buttonblock">
-               <button className="primaryButton" onClick={() => setShowReportsUpsell(false)}>{t('general.plan.upsell.close')}</button>
+            <div className="upsellModal">
+               <p>{t('general.plan.upgrade.intermediate')}</p>
+               <div className="buttonblock">
+                  <button className="secondaryButton" onClick={() => setShowReportsUpsell(false)}>{t('general.cancel')}</button>
+                  <button className="primaryButton" onClick={() => { setShowReportsUpsell(false); router.push('/plan') }}>{t('general.plan.upsell.upgrade')}</button>
+               </div>
             </div>
          </Modal>
 

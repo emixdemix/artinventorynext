@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { useEffect, useState } from "react"
-import { apiDeleteShow, convertIsoDate, Dotted, getImagePathOriginal, getSelections, getShows, hideWaiting, showWaiting } from "./utility"
+import { apiDeleteShow, convertIsoDate, Dotted, downloadDataUrl, getImagePathOriginal, getSelections, getShows, hideWaiting, showWaiting } from "./utility"
 import { ArtSelection, Shows } from "../interfaces"
 import { useRouter, useParams } from "next/navigation"
 import { Modal } from "./modal"
@@ -9,6 +9,7 @@ import { BackButton } from "./backbutton"
 const empty = '/images/nothing.svg'
 
 const ShowGallery = (props: { pictures: { _id: string; url: string }[] }) => {
+   const { t } = useTranslation()
    const [previews, setPreviews] = useState<{ [id: string]: string | null }>({})
    const [zoom, setZoom] = useState<string | null>(null)
 
@@ -38,7 +39,16 @@ const ShowGallery = (props: { pictures: { _id: string; url: string }[] }) => {
             })}
          </div>
          <Modal title="" closeicon="" visible={zoom !== null} onClose={() => setZoom(null)}>
-            {zoom && <img className="fit" src={zoom} />}
+            {zoom && (
+               <>
+                  <img className="fit" src={zoom} />
+                  <div className="buttonblock">
+                     <button className="primaryButton" onClick={() => downloadDataUrl(zoom, 'image.png')}>
+                        {t('general.download')}
+                     </button>
+                  </div>
+               </>
+            )}
          </Modal>
       </>
    )

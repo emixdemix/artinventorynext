@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { Modal } from "./modal"
 import { Media } from "./media"
 import {
+  downloadDataUrl,
   getImagePathOriginal,
   hideWaiting,
   showWaiting,
@@ -228,7 +229,16 @@ export const ShowImagesField = (props: ShowImagesFieldProps) => {
         visible={zoomPreview !== null}
         onClose={() => setZoomPreview(null)}
       >
-        {zoomPreview && <img className="fit" src={zoomPreview} />}
+        {zoomPreview && (
+          <>
+            <img className="fit" src={zoomPreview} />
+            <div className="buttonblock">
+              <button className="primaryButton" onClick={() => downloadDataUrl(zoomPreview, "image.png")}>
+                {t("general.download")}
+              </button>
+            </div>
+          </>
+        )}
       </Modal>
     </div>
   )

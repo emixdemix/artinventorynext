@@ -162,10 +162,22 @@ export const PersonalInformation = () => {
                onChange={(e) => { setUserurl(e.target.value); setUserurlError('') }}
                onBlur={onUserurlBlur}
             />
-            <p className="smallerText">{t('general.userurl.help')}</p>
-            {userurl && !userurlError && (
-               <p className="smallerText">{t('general.userurl.preview', { url: `artinventory.de/${userurl.trim().toLowerCase()}` })}</p>
-            )}
+            <p className="smallerText" style={{ paddingLeft: 16 }}>{t('general.userurl.help')}</p>
+            {userurl && !userurlError && (() => {
+               const url = `artinventory.de/${userurl.trim().toLowerCase()}`
+               const href = `https://${url}`
+               const text = t('general.userurl.preview', { url })
+               const idx = text.indexOf(href)
+               const before = idx >= 0 ? text.slice(0, idx) : text.replace(href, '')
+               const after = idx >= 0 ? text.slice(idx + href.length) : ''
+               return (
+                  <p className="smallerText" style={{ gridColumn: '1 / -1' }}>
+                     {before}
+                     <a href={href} target="_blank" rel="noreferrer">{href}</a>
+                     {after}
+                  </p>
+               )
+            })()}
             {userurlError && <p className="smallerText error">{userurlError}</p>}
          </div>
          <div className="buttonblock">

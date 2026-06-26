@@ -344,6 +344,7 @@
       },
       "menu": {
         "media": "Media",
+        "manage": "Manage",
         "organize": "Organize",
         "shows": "Shows",
         "artwork": "Artwork",
@@ -749,6 +750,7 @@
       },
       "menu": {
         "media": "Media",
+        "manage": "Gestisci",
         "organize": "Organizza",
         "shows": "Shows",
         "artwork": "Artwork",

@@ -61,6 +61,7 @@ export const Header = () => {
       return (
       <div className={`dropmenu ${over ? "over" : ''}`}>
          <div onClick={() => router.push('/profile')} className=' pointer'>{t('general.menu.profile')}</div>
+         <div onClick={() => router.push('/settings')} className=' pointer'>{t('general.menu.settings')}</div>
          <div onClick={() => setShowLogout(true)} className=' pointer'>{t('general.menu.logout')}</div>
       </div>
       )
@@ -75,7 +76,7 @@ export const Header = () => {
                   <p onClick={() => router.push('/dashboard')}>{t('general.menu.artwork')}</p>
                   <p onClick={() => router.push('/media')}>{t('general.menu.media')}</p>
                   <div ref={refMenu} className='openmenu' onClick={()=>setMenuOpen(!menuOpen)}>
-                     {t('general.menu.organize')}
+                     {t('general.menu.manage')}
                      <div className={`submenu ${menuOpen ? "open" : "close"}`}>
                         <p onClick={() => router.push('/shows')}>{t('general.menu.shows')}</p>
                         <p onClick={() => router.push('/customers')}>{t('general.menu.customers')}</p>
@@ -86,7 +87,7 @@ export const Header = () => {
                            {t('general.menu.reports')}
                         </p>
                         <p onClick={() => router.push('/selection')}>{t('general.menu.selections')}</p>
-                        <p onClick={() => router.push('/organize')}>{t('general.menu.settings')}</p>
+                        <p onClick={() => router.push('/organize')}>{t('general.menu.organize')}</p>
                      </div>
                   </div>
                   <p onClick={() => router.push('/feedback')}>{t('general.menu.feedback')}</p>
@@ -128,9 +129,10 @@ export const Header = () => {
                         {t('general.menu.reports')}
                      </p>
                      <p onClick={() => { setVisible(false); router.push('/selection')}}>{t('general.menu.selections')}</p>
-                     <p onClick={() => { setVisible(false); router.push('/organize') }}>{t('general.menu.settings')}</p>
+                     <p onClick={() => { setVisible(false); router.push('/organize') }}>{t('general.menu.organize')}</p>
 
                      <p onClick={() => { setVisible(false); router.push('/feedback') }}>{t('general.menu.feedback')}</p>
+                     <p onClick={() => { setVisible(false); router.push('/settings') }}>{t('general.menu.settings')}</p>
                      <p onClick={() => { setVisible(false); router.push('/logout') }}>{t('general.menu.logout')}</p>
                      <div style={{ marginTop: 8 }}><ThemeToggle /></div>
                   </div>

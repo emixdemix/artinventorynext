@@ -1382,3 +1382,21 @@ export const { useAddMoreMediaListener, emitAddMoreMedia } = createEvent(
 )<{ id: string }>();
 export const { useFileDroppedListener, emitFileDropped } =
   createEvent("FileDropped")<KeyValue>();
+
+export const downloadDataUrl = (dataUrl: string, filename: string) => {
+  const match = dataUrl.match(/^data:([^;]+);base64,(.*)$/);
+  if (!match) return;
+  const mime = match[1];
+  const binary = atob(match[2]);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  const blob = new Blob([bytes], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+};

@@ -9,6 +9,7 @@ import {
   emitSelectRow,
   emitSwap,
   emitSwapOrder,
+  downloadDataUrl,
   getImagePathOriginal,
   hideWaiting,
   showWaiting,
@@ -247,6 +248,21 @@ export const ArtPieceLine = (props: ArtPieceLineProps) => {
                   );
                 })}
               </div>
+              {original && (
+                <div className="buttonblock">
+                  <button
+                    className="primaryButton"
+                    onClick={() =>
+                      downloadDataUrl(
+                        `data:image/png;base64,${original}`,
+                        `${props.artPiece.title || "image"}.png`,
+                      )
+                    }
+                  >
+                    {t("general.download")}
+                  </button>
+                </div>
+              )}
             </>
           )}
         </>
@@ -423,7 +439,24 @@ export const ArtPieceLineList = (props: ArtPieceLineListProps) => {
               <p className="smallText">{t("general.loading")}</p>
             </div>
           ) : (
-            <img className="fit" src={`data:image/png;base64,${original}`} />
+            <>
+              <img className="fit" src={`data:image/png;base64,${original}`} />
+              {original && (
+                <div className="buttonblock">
+                  <button
+                    className="primaryButton"
+                    onClick={() =>
+                      downloadDataUrl(
+                        `data:image/png;base64,${original}`,
+                        `${props.artPiece.title || "image"}.png`,
+                      )
+                    }
+                  >
+                    {t("general.download")}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </>
       </Modal>

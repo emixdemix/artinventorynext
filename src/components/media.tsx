@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { apiCreateFolder, apiDeleteFolder, apiGetFolders, apiMoveMedia, deleteMediaPiece, emitFileDropped, getImageMedia, getImagePathOriginal, getMedia, hideWaiting, showWaiting, useFileDroppedListener } from "./utility"
+import { apiCreateFolder, apiDeleteFolder, apiGetFolders, apiMoveMedia, deleteMediaPiece, downloadDataUrl, emitFileDropped, getImageMedia, getImagePathOriginal, getMedia, hideWaiting, showWaiting, useFileDroppedListener } from "./utility"
 import { KeyValue, PictureDao } from "../interfaces"
 import { MediaData } from "../interfaces"
 import { Modal } from "./modal"
@@ -93,7 +93,19 @@ const MediaLine = (props: { onSelect?: (data: MediaData) => void, artPiece: Pict
             {pending ?
                <img className="iconImage rotate" src={pendingimage} />
                :
-               <img className="fit" src={`data:image/png;base64,${original}`} />
+               <>
+                  <img className="fit" src={`data:image/png;base64,${original}`} />
+                  {original && (
+                     <div className="buttonblock">
+                        <button
+                           className="primaryButton"
+                           onClick={() => downloadDataUrl(`data:image/png;base64,${original}`, `${props.artPiece.name || 'image'}.png`)}
+                        >
+                           {t('general.download')}
+                        </button>
+                     </div>
+                  )}
+               </>
             }
          </Modal>
          <Modal title={t('general.delete')} closeicon={""} visible={showDelete !== ''} onClose={function (): void {

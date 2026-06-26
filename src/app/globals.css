@@ -669,6 +669,7 @@ li.react-tabs__tab--selected {
    border-bottom: 1px solid var(--gray-lighter);
    padding-bottom: 16px !important;
    font-weight: 600;
+   font-size: 14px;
 }
 
 .dropmenu div:hover {

@@ -137,6 +137,7 @@ export interface User {
   password: string;
   profile: UserProfile;
   plan?: UserPlan;
+  demo?: boolean;
 }
 
 export interface Address {

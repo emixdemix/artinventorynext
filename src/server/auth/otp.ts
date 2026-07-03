@@ -13,6 +13,8 @@ const SESSION_TTL_MS = 30 * 24 * 3600 * 1000
 const loginOtpKey = (userId: string) => `mobile-otp:${userId}`
 const signupOtpKey = (email: string) => `mobile-signup-otp:${email.toLowerCase()}`
 
+const DEMO_OTP_CODE = '000000'
+
 const generateOtp = (): string => {
   const n = Math.floor(Math.random() * 1_000_000)
   return n.toString().padStart(6, '0')
@@ -37,9 +39,15 @@ export const requestLoginOtp = async (email: string): Promise<OtpResult> => {
   if (!user) return { ok: true }
 
   try {
-    const code = generateOtp()
     const key = loginOtpKey(user._id.toString())
     await del(key)
+
+    if (user.demo) {
+      await set({ key, data: { loginEmail: email, code: DEMO_OTP_CODE }, timetolive: OTP_TTL_MS })
+      return { ok: true }
+    }
+
+    const code = generateOtp()
     await set({ key, data: { loginEmail: email, code }, timetolive: OTP_TTL_MS })
     await sendOTPCode(code, email)
     return { ok: true }

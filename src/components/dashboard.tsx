@@ -196,6 +196,23 @@ export const Dashboard = () => {
          setArtPieces(result)
          setFiltered(result)
          emitStore({ key: 'artpieces', value: result, store: false })
+
+         const savedRaw = sessionStorage.getItem('dashboardScrollY')
+         const saved = savedRaw ? Number(savedRaw) : 0
+         if (saved > 0) {
+            let tries = 0
+            const restore = () => {
+               const maxScroll =
+                  document.documentElement.scrollHeight - window.innerHeight
+               if (maxScroll >= saved || tries > 60) {
+                  window.scrollTo({ top: saved, behavior: 'auto' })
+                  return
+               }
+               tries += 1
+               requestAnimationFrame(restore)
+            }
+            requestAnimationFrame(restore)
+         }
       })
       getCategories('all').then(cats => {
          setCategories(cats)
@@ -203,6 +220,22 @@ export const Dashboard = () => {
       const sel = localStorage.getItem('selected')
       if (sel) {
          setSelected(JSON.parse(sel))
+      }
+   }, [])
+
+   useEffect(() => {
+      const saveScroll = () => {
+         if (window.scrollY > 0) {
+            sessionStorage.setItem('dashboardScrollY', String(window.scrollY))
+         }
+      }
+      const onClickCapture = () => saveScroll()
+      const onPageHide = () => saveScroll()
+      window.addEventListener('click', onClickCapture, true)
+      window.addEventListener('pagehide', onPageHide)
+      return () => {
+         window.removeEventListener('click', onClickCapture, true)
+         window.removeEventListener('pagehide', onPageHide)
       }
    }, [])
 

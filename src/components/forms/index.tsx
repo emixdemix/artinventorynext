@@ -1173,7 +1173,7 @@ export const EditArtpiece = (props: EditArtpieceProps) => {
             placeholder={t("general.placeholders.title")}
             type="text"
             name="title"
-            value={values["title"]}
+            value={(values["title"] as string) ?? ""}
             onChange={(e) => setValueField(e.target.value, "title")}
           />
         </div>
@@ -1188,7 +1188,7 @@ export const EditArtpiece = (props: EditArtpieceProps) => {
               placeholder={t("general.placeholders.height")}
               type="text"
               name="h"
-              value={values["h"]}
+              value={(values["h"] as string) ?? ""}
               onChange={(e) => setValueField(e.target.value, "h")}
             />
             <label>
@@ -1200,7 +1200,7 @@ export const EditArtpiece = (props: EditArtpieceProps) => {
               placeholder={t("general.placeholders.width")}
               type="text"
               name="w"
-              value={values["w"]}
+              value={(values["w"] as string) ?? ""}
               onChange={(e) => setValueField(e.target.value, "w")}
             />
             <label>
@@ -1212,7 +1212,7 @@ export const EditArtpiece = (props: EditArtpieceProps) => {
               placeholder={t("general.placeholders.depth")}
               type="text"
               name="d"
-              value={values["d"]}
+              value={(values["d"] as string) ?? ""}
               onChange={(e) => setValueField(e.target.value, "d")}
             />
           </div>
@@ -1223,7 +1223,7 @@ export const EditArtpiece = (props: EditArtpieceProps) => {
             placeholder={t("general.placeholders.media")}
             type="text"
             name="media"
-            value={values["media"]}
+            value={(values["media"] as string) ?? ""}
             onChange={(e) => setValueField(e.target.value, "media")}
           />
         </div>
@@ -1233,7 +1233,7 @@ export const EditArtpiece = (props: EditArtpieceProps) => {
             placeholder={t("general.placeholders.year")}
             type="text"
             name="year"
-            value={values["year"]}
+            value={(values["year"] as string) ?? ""}
             onChange={(e) => setValueField(e.target.value, "year")}
           />
         </div>
@@ -1244,7 +1244,7 @@ export const EditArtpiece = (props: EditArtpieceProps) => {
             placeholder={t("general.placeholders.description")}
             type="text"
             name="description"
-            value={values["description"]}
+            value={(values["description"] as string) ?? ""}
             onChange={(e) => setValueField(e.target.value, "description")}
           />
         </div>
@@ -1264,7 +1264,7 @@ export const EditArtpiece = (props: EditArtpieceProps) => {
                   placeholder={t("general.placeholders.price")}
                   type="text"
                   name="price"
-                  value={values["price"]}
+                  value={(values["price"] as string) ?? ""}
                   onChange={(e) => setValueField(e.target.value, "price")}
                 />
                 <span>({store.profile?.valuta || "euro"})</span>
@@ -1287,7 +1287,7 @@ export const EditArtpiece = (props: EditArtpieceProps) => {
             placeholder={t("general.placeholders.quantity")}
             type="number"
             name="quantity"
-            value={values["quantity"]}
+            value={(values["quantity"] as string) ?? ""}
             onChange={(e) =>
               setValueField(e.target.valueAsNumber.toString(), "quantity")
             }

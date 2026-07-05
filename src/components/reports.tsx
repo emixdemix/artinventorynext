@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useParams } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 const graypie = "/images/piegray.svg";
 const clear = "/images/no.svg";
 import {
@@ -68,11 +68,40 @@ export const ReportsComponent = () => {
   const id = params?.id as string | undefined;
   const [stats, setStats] = useState<StatsData | undefined>(undefined);
   const [selected, setSelected] = useState([] as string[]);
-  const [imageSize, setImageSize] = useState<"small" | "medium" | "max">(
+  const [imageSize, setImageSizeState] = useState<"small" | "medium" | "max">(
     "medium",
   );
   const { download } = useDownloader();
   const store = useContext(ContextStorage);
+
+  const invalidateReportFile = () => {
+    setReportFile((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return "";
+    });
+  };
+
+  const setImageSize = (next: "small" | "medium" | "max") => {
+    if (next === imageSize) return;
+    setImageSizeState(next);
+  };
+
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    invalidateReportFile();
+  }, [
+    imageSize,
+    select,
+    selectedList?.value,
+    selected,
+    values,
+    frontCover,
+    backCover,
+  ]);
 
   useEffect(() => {
     getStatistics().then((data) => {

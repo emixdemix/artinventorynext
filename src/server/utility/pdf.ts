@@ -3,6 +3,7 @@ import { UserProfile } from "../interfaces";
 import {
   CatalogContext,
   CoverFlags,
+  ImageSize,
   PrintData,
   TYPE_AREA,
   PAGE_HEIGHT,
@@ -21,7 +22,7 @@ import {
   loadLogo,
 } from "./pdf/layout";
 
-export type { PrintData } from "./pdf/layout";
+export type { ImageSize, PrintData } from "./pdf/layout";
 
 const padPlate = (i: number, total: number): string => {
   const width = String(total).length;
@@ -50,6 +51,7 @@ export async function JustText(
   artpieces: PrintData[],
   profile: UserProfile,
   cover: CoverFlags,
+  imageSize: ImageSize = "medium",
 ): Promise<Uint8Array | undefined> {
   try {
     const rowH = 44;
@@ -58,7 +60,7 @@ export async function JustText(
     const totalPages = Math.max(1, Math.ceil(artpieces.length / rowsPerPage));
     const { pdfDoc, ctx } = await initContext(profile, totalPages);
 
-    await drawCover(pdfDoc, profile, "front", cover);
+    await drawCover(pdfDoc, profile, "front", cover, imageSize);
 
     let page = addCatalogPage(ctx);
     let row = 0;
@@ -89,7 +91,7 @@ export async function JustText(
       row++;
     }
 
-    await drawCover(pdfDoc, profile, "back", cover);
+    await drawCover(pdfDoc, profile, "back", cover, imageSize);
     return await pdfDoc.save();
   } catch (e) {
     console.error(e);
@@ -101,6 +103,7 @@ export async function IconListLayout(
   artpieces: PrintData[],
   profile: UserProfile,
   cover: CoverFlags,
+  imageSize: ImageSize = "medium",
 ): Promise<Uint8Array | undefined> {
   try {
     const thumb = 72;
@@ -109,7 +112,7 @@ export async function IconListLayout(
     const totalPages = Math.max(1, Math.ceil(artpieces.length / rowsPerPage));
     const { pdfDoc, ctx } = await initContext(profile, totalPages);
 
-    await drawCover(pdfDoc, profile, "front", cover);
+    await drawCover(pdfDoc, profile, "front", cover, imageSize);
 
     let page = addCatalogPage(ctx);
     let row = 0;
@@ -131,6 +134,7 @@ export async function IconListLayout(
         page,
         artpieces[i].image,
         imgBox,
+        imageSize,
       );
 
       const textX = TYPE_AREA.x + thumb + 12;
@@ -170,7 +174,7 @@ export async function IconListLayout(
       row++;
     }
 
-    await drawCover(pdfDoc, profile, "back", cover);
+    await drawCover(pdfDoc, profile, "back", cover, imageSize);
     return await pdfDoc.save();
   } catch (e) {
     console.error(e);
@@ -182,12 +186,13 @@ export async function FourPerPageLayout(
   artpieces: PrintData[],
   profile: UserProfile,
   cover: CoverFlags,
+  imageSize: ImageSize = "medium",
 ): Promise<Uint8Array | undefined> {
   try {
     const totalPages = Math.max(1, Math.ceil(artpieces.length / 4));
     const { pdfDoc, ctx } = await initContext(profile, totalPages);
 
-    await drawCover(pdfDoc, profile, "front", cover);
+    await drawCover(pdfDoc, profile, "front", cover, imageSize);
 
     const cellGap = 14;
     const cellW = (TYPE_AREA.width - cellGap) / 2;
@@ -211,7 +216,7 @@ export async function FourPerPageLayout(
         y: cellTop - imgH,
         width: cellW,
         height: imgH,
-      });
+      }, imageSize);
 
       drawDidascalia(page, ctx.fonts, artpieces[i], {
         x: cellX,
@@ -223,7 +228,7 @@ export async function FourPerPageLayout(
       });
     }
 
-    await drawCover(pdfDoc, profile, "back", cover);
+    await drawCover(pdfDoc, profile, "back", cover, imageSize);
     return await pdfDoc.save();
   } catch (e) {
     console.error(e);
@@ -235,12 +240,13 @@ export async function TwoPerPageLayout(
   artpieces: PrintData[],
   profile: UserProfile,
   cover: CoverFlags,
+  imageSize: ImageSize = "medium",
 ): Promise<Uint8Array | undefined> {
   try {
     const totalPages = Math.max(1, Math.ceil(artpieces.length / 2));
     const { pdfDoc, ctx } = await initContext(profile, totalPages);
 
-    await drawCover(pdfDoc, profile, "front", cover);
+    await drawCover(pdfDoc, profile, "front", cover, imageSize);
 
     const cellGap = 24;
     const cellH = (TYPE_AREA.height - cellGap) / 2;
@@ -260,7 +266,7 @@ export async function TwoPerPageLayout(
         y: cellTop - imgH,
         width: TYPE_AREA.width,
         height: imgH,
-      });
+      }, imageSize);
 
       drawDidascalia(page, ctx.fonts, artpieces[i], {
         x: TYPE_AREA.x,
@@ -272,7 +278,7 @@ export async function TwoPerPageLayout(
       });
     }
 
-    await drawCover(pdfDoc, profile, "back", cover);
+    await drawCover(pdfDoc, profile, "back", cover, imageSize);
     return await pdfDoc.save();
   } catch (e) {
     console.error(e);
@@ -284,12 +290,13 @@ export async function OnePerPageLayout(
   artpieces: PrintData[],
   profile: UserProfile,
   cover: CoverFlags,
+  imageSize: ImageSize = "medium",
 ): Promise<Uint8Array | undefined> {
   try {
     const totalPages = Math.max(1, artpieces.length);
     const { pdfDoc, ctx } = await initContext(profile, totalPages);
 
-    await drawCover(pdfDoc, profile, "front", cover);
+    await drawCover(pdfDoc, profile, "front", cover, imageSize);
 
     const didReserved = 60;
     const descReserved = 100;
@@ -304,7 +311,7 @@ export async function OnePerPageLayout(
         y: imgTop - imgH,
         width: TYPE_AREA.width,
         height: imgH,
-      });
+      }, imageSize);
 
       const didY = drawDidascalia(page, ctx.fonts, artpieces[i], {
         x: TYPE_AREA.x,
@@ -333,7 +340,7 @@ export async function OnePerPageLayout(
       }
     }
 
-    await drawCover(pdfDoc, profile, "back", cover);
+    await drawCover(pdfDoc, profile, "back", cover, imageSize);
     return await pdfDoc.save();
   } catch (e) {
     console.error(e);

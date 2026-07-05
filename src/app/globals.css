@@ -1331,6 +1331,17 @@ li.react-tabs__tab--selected {
    width: 15px;
 }
 
+.imageSizeField {
+   margin-top: 16px;
+   width: 100%;
+}
+
+.imageSizeField label {
+   display: block;
+   font-size: 14px;
+   margin-bottom: 6px;
+}
+
 .reportheader {
    display: grid;
    justify-content: flex-start;

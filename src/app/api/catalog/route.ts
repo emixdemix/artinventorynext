@@ -12,6 +12,7 @@ import {
   IconListLayout,
   JustText,
   TwoPerPageLayout,
+  type ImageSize,
 } from "@/server/utility/pdf";
 import { KeyValue } from "@/server/interfaces";
 import { ObjectId } from "mongodb";
@@ -30,6 +31,10 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { catalog, selectedList, list } = body;
   const fieldsIn: KeyValue = body.fields ?? {};
+  const imageSize: ImageSize =
+    body.imageSize === "small" || body.imageSize === "max"
+      ? body.imageSize
+      : "medium";
 
   if (!catalog || (!selectedList?.length && !list)) {
     return NextResponse.json({}, { status: 417 });
@@ -82,19 +87,19 @@ export async function POST(request: NextRequest) {
     let pdf;
     switch (catalog) {
       case "singlepage":
-        pdf = await OnePerPageLayout(data, user.profile, cover);
+        pdf = await OnePerPageLayout(data, user.profile, cover, imageSize);
         break;
       case "imagelist":
-        pdf = await FourPerPageLayout(data, user.profile, cover);
+        pdf = await FourPerPageLayout(data, user.profile, cover, imageSize);
         break;
       case "listicon":
-        pdf = await IconListLayout(data, user.profile, cover);
+        pdf = await IconListLayout(data, user.profile, cover, imageSize);
         break;
       case "list":
-        pdf = await JustText(data, user.profile, cover);
+        pdf = await JustText(data, user.profile, cover, imageSize);
         break;
       case "twolist":
-        pdf = await TwoPerPageLayout(data, user.profile, cover);
+        pdf = await TwoPerPageLayout(data, user.profile, cover, imageSize);
         break;
       default:
         return NextResponse.json("", { status: 404 });

@@ -68,6 +68,9 @@ export const ReportsComponent = () => {
   const id = params?.id as string | undefined;
   const [stats, setStats] = useState<StatsData | undefined>(undefined);
   const [selected, setSelected] = useState([] as string[]);
+  const [imageSize, setImageSize] = useState<"small" | "medium" | "max">(
+    "medium",
+  );
   const { download } = useDownloader();
   const store = useContext(ContextStorage);
 
@@ -139,6 +142,7 @@ export const ReportsComponent = () => {
         catalog: select,
         selectedList: selected,
         listId: selectedList?.value,
+        imageSize,
       };
       const response = await apiGetReport(body);
 
@@ -350,6 +354,28 @@ export const ReportsComponent = () => {
                         onChange={(e) => setValueField("year")}
                       />
                     </div>
+                  </div>
+                  <div className="inputfield imageSizeField">
+                    <label>{t("general.imageSize")}</label>
+                    <Select
+                      isSearchable={false}
+                      value={{
+                        value: imageSize,
+                        label: t(`general.imageSize_${imageSize}`),
+                      }}
+                      options={[
+                        { value: "small", label: t("general.imageSize_small") },
+                        { value: "medium", label: t("general.imageSize_medium") },
+                        { value: "max", label: t("general.imageSize_max") },
+                      ]}
+                      onChange={(e) => {
+                        if (e) {
+                          setImageSize(
+                            e.value as "small" | "medium" | "max",
+                          );
+                        }
+                      }}
+                    />
                   </div>
                 </div>
               </div>

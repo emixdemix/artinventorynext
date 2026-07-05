@@ -9,8 +9,16 @@ import {
 import fs from "fs";
 import path from "path";
 import fontkit from "@pdf-lib/fontkit";
+import sharp from "sharp";
 import { getObject } from "../../s3";
 import { ARTINVENTORY_BUCKET, UserProfile } from "../../interfaces";
+
+export type ImageSize = "small" | "medium" | "max";
+
+const IMAGE_MAX_EDGE: Record<Exclude<ImageSize, "max">, number> = {
+  small: 1000,
+  medium: 1500,
+};
 
 export interface PrintData {
   image: string;
@@ -254,20 +262,42 @@ const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
 const isPng = (buf: Buffer): boolean =>
   buf.length >= 4 && buf.subarray(0, 4).equals(PNG_MAGIC);
 
+const downscaleToJpeg = async (
+  buf: Buffer,
+  maxEdge: number,
+): Promise<Buffer> => {
+  try {
+    return await sharp(buf)
+      .rotate()
+      .resize({ width: maxEdge, height: maxEdge, fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: 80, mozjpeg: true })
+      .toBuffer();
+  } catch {
+    return buf;
+  }
+};
+
 const embedImage = async (
   pdfDoc: PDFDocument,
   buf: Buffer,
-): Promise<PDFImage> =>
-  isPng(buf) ? pdfDoc.embedPng(buf) : pdfDoc.embedJpg(buf);
+  size: ImageSize,
+): Promise<PDFImage> => {
+  if (size === "max") {
+    return isPng(buf) ? pdfDoc.embedPng(buf) : pdfDoc.embedJpg(buf);
+  }
+  const jpeg = await downscaleToJpeg(buf, IMAGE_MAX_EDGE[size]);
+  return pdfDoc.embedJpg(jpeg);
+};
 
 export const drawImagePlate = async (
   pdfDoc: PDFDocument,
   page: PDFPage,
   key: string,
   box: { x: number; y: number; width: number; height: number },
+  size: ImageSize = "medium",
 ): Promise<DrawnRect> => {
   const obj = await getObject(ARTINVENTORY_BUCKET, key);
-  const img = await embedImage(pdfDoc, obj.Body as Buffer);
+  const img = await embedImage(pdfDoc, obj.Body as Buffer, size);
   const dims = img.scaleToFit(box.width, box.height);
   const x = box.x + (box.width - dims.width) / 2;
   const y = box.y + (box.height - dims.height) / 2;
@@ -285,11 +315,12 @@ export const drawCover = async (
   profile: UserProfile,
   side: "front" | "back",
   cover: CoverFlags,
+  size: ImageSize = "medium",
 ): Promise<void> => {
   const enabled = side === "front" ? cover.frontCover : cover.backCover;
   const data = side === "front" ? profile.front : profile.back;
   if (!enabled || !data) return;
-  const img = await embedImage(pdfDoc, Buffer.from(data, "base64"));
+  const img = await embedImage(pdfDoc, Buffer.from(data, "base64"), size);
   const page = pdfDoc.addPage(PageSizes.A4);
   page.drawImage(img, {
     x: 0,

@@ -792,6 +792,7 @@ export const apiGetReport = async (data: KeyValue): Promise<Blob | null> => {
           list: data.listId,
           selectedList: data.selectedList,
           fields: data.fields,
+          imageSize: data.imageSize,
         },
         {
           headers: {

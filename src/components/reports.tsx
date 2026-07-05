@@ -59,7 +59,7 @@ export const ReportsComponent = () => {
   const [showMediaLibrary, setShowMediaLibrary] = useState(false);
   const [values, setValues] = useState({
     name: true,
-    description: true,
+    description: false,
     price: false,
     dimensions: true,
     media: true,

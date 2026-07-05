@@ -19,7 +19,7 @@ import { SearchBlock } from "./forms"
 import { useDrag, useDrop } from "react-dnd"
 
 
-const MediaLine = (props: { onSelect?: (data: MediaData) => void, artPiece: PictureDao }) => {
+const MediaLine = (props: { onSelect?: (data: MediaData) => void, onDelete?: (id: string) => void, artPiece: PictureDao }) => {
    const [showImage, setShowImage] = useState('')
    const [original, setOriginal] = useState('')
    const [image, setImage] = useState('')
@@ -44,6 +44,7 @@ const MediaLine = (props: { onSelect?: (data: MediaData) => void, artPiece: Pict
       hideWaiting()
       if (response === true) {
          setShowDelete('')
+         props.onDelete?.(artPieceId)
          router.refresh()
       } else {
          setError(t('general.couldnotdelete'))
@@ -417,7 +418,11 @@ export const Media = (props: MediaProps) => {
                   {filtered.map(item => {
                      return (
                         <div key={item._id} className="rowContainer">
-                           <MediaLine onSelect={props.onSelect ? () => props.onSelect!({ url: item.url as string, id: item._id, img: item.b64Image, name: item.name }) : undefined} artPiece={item} />
+                           <MediaLine
+                              onSelect={props.onSelect ? () => props.onSelect!({ url: item.url as string, id: item._id, img: item.b64Image, name: item.name }) : undefined}
+                              onDelete={(id) => setMedia(prev => prev.filter(p => p._id !== id))}
+                              artPiece={item}
+                           />
                         </div>
                      )
                   })

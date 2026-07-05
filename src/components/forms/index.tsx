@@ -1118,6 +1118,12 @@ export const EditArtpiece = (props: EditArtpieceProps) => {
     setImage("");
   };
 
+  const removeImage = () => {
+    setFiles([]);
+    setImage("");
+    setOriginal("");
+  };
+
   const checkFields = () => {
     if (values["w"] && !values["h"]) {
       return true;
@@ -1349,40 +1355,53 @@ export const EditArtpiece = (props: EditArtpieceProps) => {
             <Media onSelect={(data) => selectedImage(data)} />
           </section>
         ) : (
-          <FileUploader
-            multiple={false}
-            handleChange={handleChange}
-            name="file"
-            types={["png", "jpg", "jpeg"]}
-          >
-            <div className="uploadContainer">
-              {files.length > 0 ? (
-                <div className="uploadpreview">
-                  <GetImage file={files[0]} />
-                  <p>{`${t("general.filename")} ${files[0].name}`}</p>
-                </div>
-              ) : original ? (
-                <div className="uploadpreview">
-                  <img
-                    id="image"
-                    className=""
-                    src={`data:image/png;base64,${original}`}
-                  />
-                </div>
-              ) : pending ? (
-                <div className="upload">
-                  <img className="iconImage rotate" src={pendingimage} />
-                  <p className="smallText">{t("general.loading")}</p>
-                </div>
-              ) : (
-                <div className="upload">
-                  <img className="iconImage" src={uploadimage} />
-                  <p className="smallText">{t("general.upload")}</p>
-                </div>
-              )}
-            </div>
-            {props.error && <p className="error">{props.error}</p>}
-          </FileUploader>
+          <>
+            <FileUploader
+              multiple={false}
+              handleChange={handleChange}
+              name="file"
+              types={["png", "jpg", "jpeg"]}
+            >
+              <div className="uploadContainer">
+                {files.length > 0 ? (
+                  <div className="uploadpreview">
+                    <GetImage file={files[0]} />
+                    <p>{`${t("general.filename")} ${files[0].name}`}</p>
+                  </div>
+                ) : original ? (
+                  <div className="uploadpreview">
+                    <img
+                      id="image"
+                      className=""
+                      src={`data:image/png;base64,${original}`}
+                    />
+                  </div>
+                ) : pending ? (
+                  <div className="upload">
+                    <img className="iconImage rotate" src={pendingimage} />
+                    <p className="smallText">{t("general.loading")}</p>
+                  </div>
+                ) : (
+                  <div className="upload">
+                    <img className="iconImage" src={uploadimage} />
+                    <p className="smallText">{t("general.upload")}</p>
+                  </div>
+                )}
+              </div>
+              {props.error && <p className="error">{props.error}</p>}
+            </FileUploader>
+            {(files.length > 0 || original) && (
+              <div className="removeImageWrap">
+                <button
+                  type="button"
+                  className="secondaryButton"
+                  onClick={removeImage}
+                >
+                  {t("general.remove")}
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         <div className="buttonblock">

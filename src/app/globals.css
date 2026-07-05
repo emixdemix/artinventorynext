@@ -954,6 +954,13 @@ li.react-tabs__tab--selected {
    justify-content: center;
    width: 400px;
    margin: 0 auto;
+   gap: 16px;
+}
+
+.removeImageWrap {
+   display: flex;
+   justify-content: center;
+   margin-top: 16px;
 }
 
 .uploadpreview img {

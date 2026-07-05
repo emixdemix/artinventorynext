@@ -249,6 +249,17 @@ export interface DrawnRect {
   height: number;
 }
 
+const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+
+const isPng = (buf: Buffer): boolean =>
+  buf.length >= 4 && buf.subarray(0, 4).equals(PNG_MAGIC);
+
+const embedImage = async (
+  pdfDoc: PDFDocument,
+  buf: Buffer,
+): Promise<PDFImage> =>
+  isPng(buf) ? pdfDoc.embedPng(buf) : pdfDoc.embedJpg(buf);
+
 export const drawImagePlate = async (
   pdfDoc: PDFDocument,
   page: PDFPage,
@@ -256,11 +267,11 @@ export const drawImagePlate = async (
   box: { x: number; y: number; width: number; height: number },
 ): Promise<DrawnRect> => {
   const obj = await getObject(ARTINVENTORY_BUCKET, key);
-  const jpg = await pdfDoc.embedJpg(obj.Body as Buffer);
-  const dims = jpg.scaleToFit(box.width, box.height);
+  const img = await embedImage(pdfDoc, obj.Body as Buffer);
+  const dims = img.scaleToFit(box.width, box.height);
   const x = box.x + (box.width - dims.width) / 2;
   const y = box.y + (box.height - dims.height) / 2;
-  page.drawImage(jpg, {
+  page.drawImage(img, {
     x,
     y,
     width: dims.width,
@@ -278,7 +289,7 @@ export const drawCover = async (
   const enabled = side === "front" ? cover.frontCover : cover.backCover;
   const data = side === "front" ? profile.front : profile.back;
   if (!enabled || !data) return;
-  const img = await pdfDoc.embedJpg(Buffer.from(data, "base64"));
+  const img = await embedImage(pdfDoc, Buffer.from(data, "base64"));
   const page = pdfDoc.addPage(PageSizes.A4);
   page.drawImage(img, {
     x: 0,

@@ -65,7 +65,7 @@ interface AddArtpieceProps {
 
 interface EditArtpieceProps {
   onClose: () => void;
-  onSave: (form: ArtPieceDAO) => void;
+  onSave: (form: ArtPieceDAO, stay?: boolean) => void;
   artpiece: ArtPiece;
   error: string;
   categories: Category[];
@@ -1143,24 +1143,35 @@ export const EditArtpiece = (props: EditArtpieceProps) => {
     setValues({ ...values });
   };
 
-  const saveArtPiece = () => {
+  const saveArtPiece = (priceOverride?: string, stay?: boolean) => {
     const cats = [];
     cats.push(
       ...(values["category"] as MultiValue<Category>).map((item) => item._id),
     );
     cats.push((values["status"] as SingleValue<Category>)?._id as string);
     cats.push((values["arttype"] as SingleValue<Category>)?._id as string);
-    props.onSave({
-      image: files.length > 0 ? files[0] : image,
-      title: values["title"],
-      dimensions: createDimensions(values["w"], values["h"], values["d"]),
-      description: values["description"],
-      price: values["price"],
-      year: values["year"],
-      media: values["media"],
-      quantity: values["quantity"] ? values["quantity"].toString() : "1",
-      categories: cats,
-    });
+    props.onSave(
+      {
+        image: files.length > 0 ? files[0] : image,
+        title: values["title"],
+        dimensions: createDimensions(values["w"], values["h"], values["d"]),
+        description: values["description"],
+        price: priceOverride ?? values["price"],
+        year: values["year"],
+        media: values["media"],
+        quantity: values["quantity"] ? values["quantity"].toString() : "1",
+        categories: cats,
+      },
+      stay,
+    );
+  };
+
+  const saveFromCalculator = (price: number) => {
+    const priceStr = price.toString();
+    values["price"] = priceStr;
+    setValues({ ...values });
+    setShowCalculator(false);
+    saveArtPiece(priceStr, true);
   };
 
   const selectedImage = (data: { url: string; id: string }) => {
@@ -1431,6 +1442,7 @@ export const EditArtpiece = (props: EditArtpieceProps) => {
           price={values["price"] || "0"}
           width={values["w"] || "0"}
           height={values["h"] || "0"}
+          onSave={saveFromCalculator}
         />
       </Modal>
     </>

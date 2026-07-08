@@ -105,7 +105,7 @@
       "calculator": "Calcolate Factor/Price",
       "click_operation": "Click for options",
       "point3addfrontback": "4. Select a custom front or back cover for your report",
-      "calculator_description": "Change the factor or the Height and Width to see the new price",
+      "calculator_description": "Change factor to see new price, or price to see the factor.",
       "selllist": "This is the list of all artwork you sold. Details on the sale when available by clicking on a card.",
       "noselection": "To connect artworks to a customer you should first select them from the Artwork list",
       "howtosell": "Select a customer and confirm the operation. The artwork pieces will be connected with the customer selected.",

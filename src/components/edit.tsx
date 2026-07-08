@@ -33,7 +33,7 @@ export const Edit = () => {
       })
    }, [])
 
-   const updatePiece = async (form: ArtPieceDAO) => {
+   const updatePiece = async (form: ArtPieceDAO, stay = false) => {
       showWaiting()
       const formData = new FormData()
 
@@ -57,7 +57,9 @@ export const Edit = () => {
       hideWaiting()
       if (response === true) {
          posthog.capture("art_piece_updated", { title: form.title, art_piece_id: artPiece._id })
-         router.push('/dashboard')
+         if (!stay) {
+            router.push('/dashboard')
+         }
       } else {
          setError(t('general.couldnotupdate'))
       }
@@ -69,8 +71,8 @@ export const Edit = () => {
          <p className="breadcrumb">{t('general.editartpiece')}</p>
          {artPiece?.title && <EditArtpiece onClose={function (): void {
             router.push('/dashboard')
-         }} onSave={function (form: ArtPieceDAO): void {
-            updatePiece(form)
+         }} onSave={function (form: ArtPieceDAO, stay?: boolean): void {
+            updatePiece(form, stay)
          }} artpiece={artPiece} error={error} categories={categories} />}
       </section>
    )

@@ -135,6 +135,7 @@ export async function IconListLayout(
         artpieces[i].image,
         imgBox,
         imageSize,
+        artpieces[i].linkUrl,
       );
 
       const textX = TYPE_AREA.x + thumb + 12;
@@ -216,7 +217,7 @@ export async function FourPerPageLayout(
         y: cellTop - imgH,
         width: cellW,
         height: imgH,
-      }, imageSize);
+      }, imageSize, artpieces[i].linkUrl);
 
       drawDidascalia(page, ctx.fonts, artpieces[i], {
         x: cellX,
@@ -266,7 +267,7 @@ export async function TwoPerPageLayout(
         y: cellTop - imgH,
         width: TYPE_AREA.width,
         height: imgH,
-      }, imageSize);
+      }, imageSize, artpieces[i].linkUrl);
 
       drawDidascalia(page, ctx.fonts, artpieces[i], {
         x: TYPE_AREA.x,
@@ -311,7 +312,7 @@ export async function OnePerPageLayout(
         y: imgTop - imgH,
         width: TYPE_AREA.width,
         height: imgH,
-      }, imageSize);
+      }, imageSize, artpieces[i].linkUrl);
 
       const didY = drawDidascalia(page, ctx.fonts, artpieces[i], {
         x: TYPE_AREA.x,

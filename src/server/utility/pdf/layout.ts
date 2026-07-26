@@ -3,6 +3,7 @@ import {
   PDFFont,
   PDFImage,
   PDFPage,
+  PDFString,
   PageSizes,
   rgb,
 } from "pdf-lib";
@@ -28,6 +29,7 @@ export interface PrintData {
   year: string;
   price: string;
   description: string;
+  linkUrl?: string;
 }
 
 export interface CoverFlags {
@@ -289,12 +291,30 @@ const embedImage = async (
   return pdfDoc.embedJpg(jpeg);
 };
 
+export const addUriLink = (
+  pdfDoc: PDFDocument,
+  page: PDFPage,
+  rect: { x: number; y: number; width: number; height: number },
+  uri: string,
+): void => {
+  if (!uri) return;
+  const annot = pdfDoc.context.obj({
+    Type: "Annot",
+    Subtype: "Link",
+    Rect: [rect.x, rect.y, rect.x + rect.width, rect.y + rect.height],
+    Border: [0, 0, 0],
+    A: { Type: "Action", S: "URI", URI: PDFString.of(uri) },
+  });
+  page.node.addAnnot(pdfDoc.context.register(annot));
+};
+
 export const drawImagePlate = async (
   pdfDoc: PDFDocument,
   page: PDFPage,
   key: string,
   box: { x: number; y: number; width: number; height: number },
   size: ImageSize = "medium",
+  linkUrl?: string,
 ): Promise<DrawnRect> => {
   const obj = await getObject(ARTINVENTORY_BUCKET, key);
   const img = await embedImage(pdfDoc, obj.Body as Buffer, size);
@@ -307,7 +327,9 @@ export const drawImagePlate = async (
     width: dims.width,
     height: dims.height,
   });
-  return { x, y, width: dims.width, height: dims.height };
+  const rect = { x, y, width: dims.width, height: dims.height };
+  if (linkUrl) addUriLink(pdfDoc, page, rect, linkUrl);
+  return rect;
 };
 
 export const drawCover = async (

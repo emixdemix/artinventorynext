@@ -72,15 +72,21 @@ export async function POST(request: NextRequest) {
   };
 
   if (response) {
+    const origin = request.nextUrl.origin;
     const data = response.map((item: any) => {
+      const picture = item.images[0];
+      const pictureId = picture?._id?.toString();
       return {
-        image: `${userId}/${item.images[0].url}`,
+        image: `${userId}/${picture.url}`,
         title: showName ? item.title || "" : "",
         media: showMedia ? item.media || "" : "",
         dimensions: showDimensions ? item.dimensions || "" : "",
         year: showYear && item.creation_date ? String(item.creation_date) : "",
         price: showPrice ? item.price ?? "" : "",
         description: showDescription ? item.description || "" : "",
+        linkUrl: pictureId
+          ? `${origin}/showimage/${userId}/${pictureId}`
+          : undefined,
       };
     });
 

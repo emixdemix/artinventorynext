@@ -24,7 +24,7 @@ export const ShowPDF = (props:ShowPDFProps) => {
    
    return (
       <div className="pdfviewer">
-         <Document onClick={props.onClick} className="pdfView" file={props.url} onLoadSuccess={(pdf)=>{setPages(pdf._pdfInfo.numPages)}}>
+         <Document onClick={props.onClick} className="pdfView" file={props.url} externalLinkTarget="_blank" externalLinkRel="noopener noreferrer" onLoadSuccess={(pdf)=>{setPages(pdf._pdfInfo.numPages)}}>
             <Page pageNumber={page}  width={550}/>
          </Document>
          <div className='pager'>

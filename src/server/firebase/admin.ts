@@ -29,6 +29,7 @@ export const initAdmin = (): void => {
   const t = admin.initializeApp({
     credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
   });
+  console.log("T:", t);
   initialized = true;
 };
 

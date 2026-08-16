@@ -44,6 +44,7 @@ export interface Reports {
    valuta: string
    userurl?: string
    plan?: UserPlan
+   email?: string
 }
 
 export type UserPlan = 'free' | 'intermediate' | 'full'

@@ -30,6 +30,7 @@ export type VerifyResult =
 
 export const accountExists = async (email: string): Promise<boolean> => {
   const user = await getUser({ email })
+  // A deleted user still occupies the email and cannot re-register or log in.
   return !!user
 }
 
@@ -37,6 +38,7 @@ export const requestLoginOtp = async (email: string): Promise<OtpResult> => {
   // Don't disclose whether the email exists.
   const user = await getUser({ email })
   if (!user) return { ok: true }
+  if (user.deleted) return { ok: true }
 
   try {
     const key = loginOtpKey(user._id.toString())
@@ -64,6 +66,7 @@ export const verifyLoginOtp = async (
 
   const user = await getUser({ email })
   if (!user) return { ok: false, status: 404 }
+  if (user.deleted) return { ok: false, status: 404 }
 
   const key = loginOtpKey(user._id.toString())
   const stored = await get(key)

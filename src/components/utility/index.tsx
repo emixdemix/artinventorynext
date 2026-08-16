@@ -466,6 +466,20 @@ export const checkUserUrlAvailable = async (
   }
 };
 
+export const deleteAccount = async (): Promise<boolean> => {
+  const localSession = localStorage.getItem("session");
+  try {
+    const response = await axios.post(
+      `/api/profile/delete`,
+      {},
+      { headers: { "X-Token": localSession } },
+    );
+    return response.status === 200;
+  } catch (e) {
+    return false;
+  }
+};
+
 export const saveProfile = async (data: KeyValue): Promise<GeneralAPIError> => {
   const localSession = localStorage.getItem("session");
 

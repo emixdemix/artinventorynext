@@ -65,6 +65,9 @@ export async function POST(request: NextRequest) {
   if (!user) {
     return NextResponse.json({}, { status: 401 })
   }
+  if (user.deleted) {
+    return NextResponse.json({}, { status: 401 })
+  }
 
   const devices = user.profile?.devices ?? []
   if (devices.length === 0) {

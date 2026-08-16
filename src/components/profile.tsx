@@ -5,7 +5,7 @@ import { CategoryTypes, KeyValue, StoreContext } from "../interfaces";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import { useTranslation } from "react-i18next";
-import { checkUserUrlAvailable, emitStore, saveProfile, useAppStateListener } from "./utility";
+import { checkUserUrlAvailable, deleteAccount, emitStore, saveProfile, useAppStateListener } from "./utility";
 import { Modal } from "./modal";
 import AvatarEditor from 'react-avatar-editor'
 const emptyprofile = '/images/profileback.svg'
@@ -239,6 +239,101 @@ export const WorkInformation = () => {
    )
 }
 
+export const DangerZone = () => {
+   const { t } = useTranslation()
+   const router = useRouter()
+   const [confirmOpen, setConfirmOpen] = useState(false)
+   const [confirmation, setConfirmation] = useState('')
+   const [pending, setPending] = useState(false)
+   const [error, setError] = useState('')
+   const store = useContext(ContextStorage)
+   const expected = (store.profile?.email || '').trim().toLowerCase()
+
+   const closeModal = () => {
+      if (pending) return
+      setConfirmOpen(false)
+      setConfirmation('')
+      setError('')
+   }
+
+   const confirmDelete = async () => {
+      if (pending) return
+      if (confirmation.trim().toLowerCase() !== expected) {
+         setError(t('general.deleteAccount.mismatch'))
+         return
+      }
+      setPending(true)
+      const ok = await deleteAccount()
+      setPending(false)
+      if (!ok) {
+         setError(t('general.deleteAccount.error'))
+         return
+      }
+      localStorage.removeItem('session')
+      localStorage.removeItem('context')
+      router.push('/login')
+   }
+
+   return (
+      <section className="pinfo">
+         <p className="strong paddingV">{t('general.deleteAccount.explain')}</p>
+         <div className="buttonblock">
+            <button
+               type="button"
+               className="secondaryButton"
+               onClick={() => setConfirmOpen(true)}
+            >
+               {t('general.deleteAccount.button')}
+            </button>
+         </div>
+
+         <Modal
+            title={t('general.deleteAccount.confirmTitle')}
+            closeicon={''}
+            visible={confirmOpen}
+            onClose={closeModal}
+         >
+            <div className="pinfo">
+               <p>{t('general.deleteAccount.confirmBody')}</p>
+               {expected && (
+                  <p className="smallerText">
+                     {t('general.deleteAccount.typeEmail', { email: expected })}
+                  </p>
+               )}
+               <div className="inputfield">
+                  <input
+                     type="text"
+                     value={confirmation}
+                     onChange={(e) => { setConfirmation(e.target.value); setError('') }}
+                     placeholder={expected}
+                     autoFocus
+                  />
+               </div>
+               {error && <p className="smallerText error">{error}</p>}
+               <div className="buttonblock">
+                  <button
+                     type="button"
+                     className="secondaryButton"
+                     onClick={closeModal}
+                     disabled={pending}
+                  >
+                     {t('general.cancel')}
+                  </button>
+                  <button
+                     type="button"
+                     className="primaryButton"
+                     onClick={confirmDelete}
+                     disabled={pending || !confirmation}
+                  >
+                     {t('general.deleteAccount.confirmCta')}
+                  </button>
+               </div>
+            </div>
+         </Modal>
+      </section>
+   )
+}
+
 export const Profile = () => {
    const { t } = useTranslation()
 
@@ -248,6 +343,7 @@ export const Profile = () => {
             <TabList>
                <Tab>{t('general.personal')}</Tab>
                <Tab>{t('general.work')}</Tab>
+               <Tab>{t('general.deleteAccount.tab')}</Tab>
             </TabList>
 
             <TabPanel>
@@ -258,6 +354,11 @@ export const Profile = () => {
             <TabPanel>
                <div className="localization">
                   <WorkInformation />
+               </div>
+            </TabPanel>
+            <TabPanel>
+               <div className="managecategories">
+                  <DangerZone />
                </div>
             </TabPanel>
          </Tabs>

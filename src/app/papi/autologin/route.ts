@@ -30,6 +30,9 @@ export async function POST(request: NextRequest) {
   if (!response) {
     return NextResponse.json({}, { status: 404 })
   }
+  if (response.deleted) {
+    return NextResponse.json({}, { status: 404 })
+  }
 
   await del(token)
   await saveLoginInfo(response)

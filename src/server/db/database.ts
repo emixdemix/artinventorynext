@@ -1437,6 +1437,19 @@ export const setUserPlan = async (
   return result.matchedCount > 0;
 };
 
+export const markUserDeleted = async (
+  userId: ObjectId,
+): Promise<boolean> => {
+  const client = await getDbClient();
+  const db = client.db(ARTINVENTORY_DB);
+  const collection = db?.collection<User>(USERS_COLLECTION);
+  const result = await collection.updateOne(
+    { _id: userId },
+    { $set: { deleted: true, deletedAt: Date.now() } },
+  );
+  return result.matchedCount > 0;
+};
+
 export const upsertUserPushToken = async (
   userId: ObjectId,
   token: string,

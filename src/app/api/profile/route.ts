@@ -12,9 +12,13 @@ export async function GET(request: NextRequest) {
   const userId = auth.user._id
 
   const response = await getUser({ _id: userId })
-  if (response) {
+  if (response && !response.deleted) {
     return NextResponse.json(
-      { ...(response.profile ?? {}), plan: response.plan || 'free' },
+      {
+        ...(response.profile ?? {}),
+        plan: response.plan || 'free',
+        email: response.email,
+      },
       { status: 200 },
     )
   } else {
@@ -65,7 +69,11 @@ export async function POST(request: NextRequest) {
 
     const profile = await updateProfile(body, info, file ? Buffer.from(await file.arrayBuffer()) : null, filename)
     return NextResponse.json(
-      { ...(profile ?? {}), plan: info.plan || 'free' },
+      {
+        ...(profile ?? {}),
+        plan: info.plan || 'free',
+        email: info.email,
+      },
       { status: 200 },
     )
   } catch (e) {

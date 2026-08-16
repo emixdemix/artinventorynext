@@ -138,6 +138,8 @@ export interface User {
   profile: UserProfile;
   plan?: UserPlan;
   demo?: boolean;
+  deleted?: boolean;
+  deletedAt?: number;
 }
 
 export interface Address {

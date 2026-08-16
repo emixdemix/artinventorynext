@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { accountExists } from "@/server/auth/otp";
+import { getUser } from "@/server/db/database";
 import { verifyAppCheck } from "@/server/auth/appCheck";
 
 export async function GET(request: NextRequest) {
@@ -14,8 +14,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const exists = await accountExists(email);
-    return NextResponse.json({ exists }, { status: 200 });
+    const user = await getUser({ email });
+    return NextResponse.json(
+      { exists: !!user, deleted: !!user?.deleted },
+      { status: 200 },
+    );
   } catch {
     return NextResponse.json({}, { status: 500 });
   }

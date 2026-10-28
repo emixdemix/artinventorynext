@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
         ...(response.profile ?? {}),
         plan: response.plan || 'free',
         email: response.email,
+        admin: response.admin === true,
       },
       { status: 200 },
     )
@@ -73,6 +74,7 @@ export async function POST(request: NextRequest) {
         ...(profile ?? {}),
         plan: info.plan || 'free',
         email: info.email,
+        admin: info.admin === true,
       },
       { status: 200 },
     )

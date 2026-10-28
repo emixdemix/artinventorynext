@@ -140,6 +140,7 @@ export interface User {
   demo?: boolean;
   deleted?: boolean;
   deletedAt?: number;
+  admin?: boolean;
 }
 
 export interface Address {

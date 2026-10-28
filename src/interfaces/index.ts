@@ -45,6 +45,7 @@ export interface Reports {
    userurl?: string
    plan?: UserPlan
    email?: string
+   admin?: boolean
 }
 
 export type UserPlan = 'free' | 'intermediate' | 'full'
@@ -178,4 +179,31 @@ export interface Feedback {
    option: string
    description: string
    createdAt: number
+}
+
+export interface AdminUser {
+   id: string
+   email: string
+   name: string
+   plan: UserPlan
+}
+
+export interface AdminLogin {
+   email: string
+   createdAt: number
+}
+
+export interface AdminUserCounts {
+   artpieces: number
+   media: number
+   shows: number
+   customers: number
+}
+
+export interface AdminUserDetail {
+   id: string
+   email: string
+   name: string
+   plan: UserPlan
+   counts: AdminUserCounts
 }

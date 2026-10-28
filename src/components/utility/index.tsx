@@ -1,5 +1,8 @@
 import axios, { AxiosResponse } from "axios";
 import {
+  AdminLogin,
+  AdminUser,
+  AdminUserDetail,
   ArtPiece,
   ArtSelection,
   Category,
@@ -380,6 +383,63 @@ export const getProfile = async () => {
     }
   } catch (e) {
     return "";
+  }
+};
+
+export const getAdminUsers = async (): Promise<AdminUser[]> => {
+  const localSession = localStorage.getItem("session");
+  try {
+    const response = await axios.get(`/api/admin/users`, {
+      headers: {
+        "X-Token": localSession,
+        "Cache-Control": "no-cache",
+      },
+    });
+    if (response.status === 200 && Array.isArray(response.data)) {
+      return response.data as AdminUser[];
+    }
+    return [];
+  } catch (e) {
+    return [];
+  }
+};
+
+export const getAdminUserDetail = async (
+  id: string,
+): Promise<AdminUserDetail | null> => {
+  const localSession = localStorage.getItem("session");
+  try {
+    const response = await axios.get(`/api/admin/users/${id}/counts`, {
+      headers: {
+        "X-Token": localSession,
+        "Cache-Control": "no-cache",
+      },
+    });
+    if (response.status === 200 && response.data) {
+      return response.data as AdminUserDetail;
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+};
+
+export const getAdminLogins = async (limit = 20): Promise<AdminLogin[]> => {
+  const localSession = localStorage.getItem("session");
+  try {
+    const response = await axios.get(`/api/admin/logins`, {
+      params: { limit },
+      headers: {
+        "X-Token": localSession,
+        "Cache-Control": "no-cache",
+      },
+    });
+    if (response.status === 200 && Array.isArray(response.data)) {
+      return response.data as AdminLogin[];
+    }
+    return [];
+  } catch (e) {
+    return [];
   }
 };
 

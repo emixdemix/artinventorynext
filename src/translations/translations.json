@@ -370,7 +370,8 @@
         "selections": "Selections",
         "feedback": "Feedback",
         "reports": "Reports",
-        "customers": "Customers"
+        "customers": "Customers",
+        "admin": "Admin"
       },
       "category": {
         "status": "Enter a new Status",
@@ -431,6 +432,45 @@
         "categoryButton": "Start Organizing",
         "artworkButton": "My Artworks",
         "reportButton": "Lists and Reports"
+      },
+      "admin": {
+        "title": "Admin",
+        "sidebar": {
+          "overview": "Overview",
+          "users": "Users"
+        },
+        "overview": {
+          "title": "Overview",
+          "description": "Platform analytics and administration.",
+          "empty": "Analytics will appear here.",
+          "latestLogins": "Latest logins",
+          "loginsEmpty": "No logins recorded yet.",
+          "column": {
+            "email": "Email",
+            "time": "Logged in at"
+          }
+        },
+        "users": {
+          "title": "Users",
+          "description": "{{count}} users registered on the platform.",
+          "empty": "No users found.",
+          "column": {
+            "id": "ID",
+            "email": "Email",
+            "name": "Name",
+            "plan": "Plan"
+          }
+        },
+        "userDetail": {
+          "title": "User detail",
+          "notFound": "User not found.",
+          "stat": {
+            "artpieces": "Artpieces",
+            "media": "Media",
+            "shows": "Shows",
+            "customers": "Customers"
+          }
+        }
       }
     }
   },
@@ -791,7 +831,8 @@
         "selections": "Selections",
         "feedback": "Feedback",
         "reports": "Reports",
-        "customers": "Customers"
+        "customers": "Customers",
+        "admin": "Admin"
       },
       "category": {
         "status": "Enter a new Status",
@@ -847,6 +888,45 @@
         "categoryButton": "Start Organizing",
         "artworkButton": "My Artworks",
         "reportButton": "Lists and Reports"
+      },
+      "admin": {
+        "title": "Admin",
+        "sidebar": {
+          "overview": "Panoramica",
+          "users": "Utenti"
+        },
+        "overview": {
+          "title": "Panoramica",
+          "description": "Statistiche di piattaforma e amministrazione.",
+          "empty": "Le statistiche appariranno qui.",
+          "latestLogins": "Ultimi accessi",
+          "loginsEmpty": "Nessun accesso registrato.",
+          "column": {
+            "email": "Email",
+            "time": "Accesso effettuato"
+          }
+        },
+        "users": {
+          "title": "Utenti",
+          "description": "{{count}} utenti registrati sulla piattaforma.",
+          "empty": "Nessun utente trovato.",
+          "column": {
+            "id": "ID",
+            "email": "Email",
+            "name": "Nome",
+            "plan": "Piano"
+          }
+        },
+        "userDetail": {
+          "title": "Dettaglio utente",
+          "notFound": "Utente non trovato.",
+          "stat": {
+            "artpieces": "Opere",
+            "media": "Media",
+            "shows": "Mostre",
+            "customers": "Clienti"
+          }
+        }
       }
     }
   }

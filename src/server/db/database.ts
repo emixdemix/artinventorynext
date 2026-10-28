@@ -1413,6 +1413,69 @@ export const getUser = async (query: KeyValue): Promise<WithId<User>> => {
   return user[0];
 };
 
+export const listAllUsers = async (): Promise<WithId<User>[]> => {
+  const client = await getDbClient();
+  const db = client.db(ARTINVENTORY_DB);
+  const collection = db?.collection<User>(USERS_COLLECTION);
+  const users = await collection
+    .find(
+      { deleted: { $ne: true } },
+      { projection: { email: 1, plan: 1, "profile.name": 1 } },
+    )
+    .toArray();
+  return users;
+};
+
+export const getUserCounts = async (
+  userId: ObjectId,
+): Promise<{
+  artpieces: number;
+  media: number;
+  shows: number;
+  customers: number;
+}> => {
+  const client = await getDbClient();
+  const db = client.db(ARTINVENTORY_DB);
+  const [artpieces, media, shows, customers] = await Promise.all([
+    db.collection(ARTPIECES_COLLECTION).countDocuments({ owner: userId }),
+    db.collection(PICTURES_COLLECTION).countDocuments({ owner: userId }),
+    db.collection(SHOWS_COLLECTION).countDocuments({ owner: userId }),
+    db.collection(CUSTOMER_COLLECTION).countDocuments({ owner: userId }),
+  ]);
+  return { artpieces, media, shows, customers };
+};
+
+export const listLatestLogins = async (
+  limit: number,
+): Promise<{ email: string; createdAt: number }[]> => {
+  const client = await getDbClient();
+  const db = client.db(ARTINVENTORY_DB);
+  const collection = db?.collection<Logins>(LOGINS_COLLECTION);
+  const rows = await collection
+    .aggregate<{ email: string; createdAt: number }>([
+      { $sort: { createdAt: -1 } },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: USERS_COLLECTION,
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: 0,
+          createdAt: 1,
+          email: { $ifNull: ["$user.email", ""] },
+        },
+      },
+    ])
+    .toArray();
+  return rows;
+};
+
 export const findUserByUserurl = async (
   userurl: string,
 ): Promise<WithId<User> | null> => {

@@ -24,6 +24,7 @@ export const Header = () => {
    const { t } = useTranslation()
    const router = useRouter()
    const planAllowsReports = (store.profile?.plan || 'free') !== 'free'
+   const isAdmin = store.profile?.admin === true
 
    const onReportsClick = () => {
       if (planAllowsReports) {
@@ -62,6 +63,7 @@ export const Header = () => {
       <div className={`dropmenu ${over ? "over" : ''}`}>
          <div onClick={() => router.push('/profile')} className=' pointer'>{t('general.menu.profile')}</div>
          <div onClick={() => router.push('/settings')} className=' pointer'>{t('general.menu.settings')}</div>
+         {isAdmin && <div onClick={() => router.push('/admin')} className=' pointer'>{t('general.menu.admin')}</div>}
          <div onClick={() => setShowLogout(true)} className=' pointer'>{t('general.menu.logout')}</div>
       </div>
       )
@@ -133,6 +135,7 @@ export const Header = () => {
 
                      <p onClick={() => { setVisible(false); router.push('/feedback') }}>{t('general.menu.feedback')}</p>
                      <p onClick={() => { setVisible(false); router.push('/settings') }}>{t('general.menu.settings')}</p>
+                     {isAdmin && <p onClick={() => { setVisible(false); router.push('/admin') }}>{t('general.menu.admin')}</p>}
                      <p onClick={() => { setVisible(false); router.push('/logout') }}>{t('general.menu.logout')}</p>
                      <div style={{ marginTop: 8 }}><ThemeToggle /></div>
                   </div>
